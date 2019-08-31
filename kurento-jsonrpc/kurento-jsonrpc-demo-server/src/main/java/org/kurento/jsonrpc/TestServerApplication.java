@@ -25,7 +25,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.web.socket.server.standard.ServletServerContainerFactoryBean;
 
 @Import(JsonRpcConfiguration.class)
 @SpringBootApplication
@@ -41,12 +40,6 @@ public class TestServerApplication implements JsonRpcConfigurer {
     return new EchoJsonRpcHandler();
   }
 
-  @Bean
-  public ServletServerContainerFactoryBean createWebSocketContainer() {
-    ServletServerContainerFactoryBean container = new ServletServerContainerFactoryBean();
-    // container.setMaxSessionIdleTimeout(10000);
-    return container;
-  }
 
   public static void main(String[] args) throws Exception {
     SpringApplication.run(TestServerApplication.class, args);

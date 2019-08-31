@@ -23,12 +23,8 @@ import org.kurento.jsonrpc.server.JsonRpcHandlerRegistration;
 import org.springframework.util.Assert;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistration;
 
 /**
- * Base class for {@link WebSocketHandlerRegistration}s that gathers all the configuration options
- * but allows sub-classes to put together the actual HTTP request mappings.
- *
  * @author Rossen Stoyanchev
  * @since 4.0
  */

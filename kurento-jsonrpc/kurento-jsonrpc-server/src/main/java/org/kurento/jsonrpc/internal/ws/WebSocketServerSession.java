@@ -40,11 +40,9 @@ import org.kurento.jsonrpc.message.Request;
 import org.kurento.jsonrpc.message.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.socket.CloseStatus;
-import org.springframework.web.socket.TextMessage;
-import org.springframework.web.socket.WebSocketSession;
 
 import com.google.gson.JsonElement;
+import org.springframework.web.reactive.socket.WebSocketSession;
 
 public class WebSocketServerSession extends ServerSession {
 
@@ -114,14 +112,14 @@ public class WebSocketServerSession extends ServerSession {
       responseFuture = pendingRequests.prepareResponse(request.getId());
     }
 
-    try {
+    /*try {
       synchronized (wsSession) {
         wsSession.sendMessage(new TextMessage(JsonUtils.toJson(request)));
       }
     } catch (Exception e) {
       throw new KurentoException("Exception while sending message '" + JsonUtils.toJson(request)
           + "' to websocket with native sessionId '" + wsSession.getId() + "'", e);
-    }
+    }*/
 
     if (responseFuture == null) {
       return null;
@@ -172,11 +170,12 @@ public class WebSocketServerSession extends ServerSession {
 
   @Override
   public void closeNativeSession(String reason) {
-    try {
+    log.info("CLOSE SESSION WITH REASON: "+reason);
+   /* try {
       wsSession.close(new CloseStatus(CloseStatus.NORMAL.getCode(), reason));
     } catch (IOException e) {
       log.warn("Exception closing webSocket session", e);
-    }
+    }*/
   }
   
   public WebSocketSession getWebSocketSession() {

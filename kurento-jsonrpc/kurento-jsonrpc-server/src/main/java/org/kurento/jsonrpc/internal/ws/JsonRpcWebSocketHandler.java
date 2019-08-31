@@ -29,14 +29,21 @@ import org.kurento.jsonrpc.internal.server.SessionsManager;
 import org.kurento.jsonrpc.message.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.socket.CloseStatus;
+import org.springframework.web.reactive.socket.CloseStatus;
+import org.springframework.web.reactive.socket.WebSocketHandler;
+import org.springframework.web.reactive.socket.WebSocketSession;
+import reactor.core.publisher.Mono;
+import reactor.util.annotation.NonNullApi;
+
+import javax.validation.constraints.NotNull;
+/*import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
-import org.springframework.web.socket.handler.TextWebSocketHandler;
+import org.springframework.web.socket.handler.TextWebSocketHandler;*/
 
-public class JsonRpcWebSocketHandler extends TextWebSocketHandler {
+public class JsonRpcWebSocketHandler implements WebSocketHandler {
 
-  public class MaxNumberWsConnectionsReachedException extends Exception {
+  private static class MaxNumberWsConnectionsReachedException extends Exception {
 
     private static final long serialVersionUID = -6621614523181088993L;
   }
@@ -62,6 +69,25 @@ public class JsonRpcWebSocketHandler extends TextWebSocketHandler {
   }
 
   @Override
+  public Mono<Void> handle(WebSocketSession webSocketSession){
+    try{
+      incNumConnectionsIfAllowed();
+    } catch (MaxNumberWsConnectionsReachedException e){
+      log.warn("Closed a WS connection because MAX_WS_CONNECTIONS={} limit reached",
+              MAX_WS_CONNECTIONS);
+      return webSocketSession.close(CloseStatus.POLICY_VIOLATION);
+    }
+    return webSocketSession.receive()
+            .doOnError(error ->{
+              protocolManager.processTransportError(webSocketSession.getId(), error);
+            })
+            .doOnNext(message->{
+      log.info("RESEIVED MESSAGE: "+message.getPayloadAsText());
+
+    }).then();
+  }
+
+ /* @Override
   public void afterConnectionEstablished(WebSocketSession session) throws Exception {
 
     try {
@@ -84,7 +110,7 @@ public class JsonRpcWebSocketHandler extends TextWebSocketHandler {
       log.error("{} Exception processing afterConnectionEstablished in session={}", label,
           session.getId(), t);
     }
-  }
+  }*/
 
   private void incNumConnectionsIfAllowed() throws MaxNumberWsConnectionsReachedException {
 
@@ -110,7 +136,7 @@ public class JsonRpcWebSocketHandler extends TextWebSocketHandler {
     }
   }
 
-  @Override
+ /* @Override
   public void afterConnectionClosed(WebSocketSession wsSession, CloseStatus status)
       throws Exception {
 
@@ -149,9 +175,9 @@ public class JsonRpcWebSocketHandler extends TextWebSocketHandler {
       log.error("{} Exception processing afterConnectionClosed in session={}", label,
           wsSession.getId(), t);
     }
-  }
+  }*/
 
-  @Override
+ /* @Override
   public void handleTransportError(WebSocketSession session, Throwable exception) throws Exception {
 
     try {
@@ -215,6 +241,6 @@ public class JsonRpcWebSocketHandler extends TextWebSocketHandler {
       log.error("{} Exception processing request {}.", label, message.getPayload(), t);
     }
 
-  }
+  }*/
 
 }

@@ -31,13 +31,12 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.util.Assert;
-import org.springframework.web.socket.handler.PerConnectionWebSocketHandler;
 
 import com.google.common.collect.ImmutableList;
 
 public class PerSessionJsonRpcHandler<T> implements JsonRpcHandler<T>, BeanFactoryAware {
 
-  private static final Log logger = LogFactory.getLog(PerConnectionWebSocketHandler.class);
+  private static final Log logger = LogFactory.getLog(PerSessionJsonRpcHandler.class);
 
   private final BeanCreatingHelper<JsonRpcHandler<T>> provider;
 

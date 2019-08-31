@@ -17,11 +17,7 @@
 
 package org.kurento.jsonrpc.internal.server.config;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 
 import org.apache.catalina.Context;
@@ -33,6 +29,7 @@ import org.kurento.jsonrpc.internal.server.ProtocolManager;
 import org.kurento.jsonrpc.internal.server.SessionsManager;
 import org.kurento.jsonrpc.internal.ws.JsonRpcWebSocketHandler;
 import org.kurento.jsonrpc.server.JsonRpcConfigurer;
+import org.kurento.jsonrpc.server.JsonRpcHandlerRegistry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.embedded.tomcat.TomcatContextCustomizer;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
@@ -43,17 +40,20 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.servlet.HandlerMapping;
-import org.springframework.web.servlet.handler.SimpleUrlHandlerMapping;
-import org.springframework.web.socket.config.annotation.EnableWebSocket;
-import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
-import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistration;
-import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
-import org.springframework.web.socket.server.HandshakeInterceptor;
+import org.springframework.web.reactive.config.EnableWebFlux;
+import org.springframework.web.reactive.HandlerMapping;
+import org.springframework.web.reactive.config.PathMatchConfigurer;
+import org.springframework.web.reactive.handler.SimpleUrlHandlerMapping;
+import org.springframework.web.reactive.socket.server.support.WebSocketHandlerAdapter;
+//import org.springframework.web.socket.config.annotation.EnableWebSocket;
+import org.springframework.web.reactive.config.WebFluxConfigurer;
+//import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistration;
+//import org.springframework.web.reactive.WebSocketHandlerRegistry;
+//import org.springframework.web.socket.server.HandshakeInterceptor;
 
 @Configuration
-@EnableWebSocket
-public class JsonRpcConfiguration implements WebSocketConfigurer {
+@EnableWebFlux
+public abstract class JsonRpcConfiguration implements WebFluxConfigurer, JsonRpcConfigurer {
 
   @Autowired
   protected ApplicationContext ctx;
@@ -89,59 +89,47 @@ public class JsonRpcConfiguration implements WebSocketConfigurer {
   public HandlerMapping jsonRpcHandlerMapping() {
 
     DefaultJsonRpcHandlerRegistry registry = getJsonRpcHandlersRegistry();
-
     Map<String, Object> urlMap = new LinkedHashMap<>();
-
-    for (DefaultJsonRpcHandlerRegistration registration : registry.getRegistrations()) {
-
-      for (Entry<JsonRpcHandler<?>, List<String>> e : registration.getHandlerMap().entrySet()) {
-
-        JsonRpcHandler<?> handler = e.getKey();
-        List<String> paths = e.getValue();
+    registry.getRegistrations().forEach(registration ->{
+      registration.getHandlerMap().forEach((handler, paths) -> {
         putHandlersMappings(urlMap, handler, paths);
-      }
+      });
 
-      for (Entry<String, List<String>> e : registration.getPerSessionHandlerBeanNameMap()
-          .entrySet()) {
+      registration.getPerSessionHandlerClassMap().forEach((handler, paths) -> {
+        putHandlersMappings(urlMap,
+                (JsonRpcHandler<?>) ctx.getBean("perSessionJsonRpcHandler", handler, null),
+                paths);
+      });
 
-        String handlerBeanName = e.getKey();
-        JsonRpcHandler<?> handler =
-            (JsonRpcHandler<?>) ctx.getBean("perSessionJsonRpcHandler", handlerBeanName, null);
-        List<String> paths = e.getValue();
-        putHandlersMappings(urlMap, handler, paths);
-      }
+      registration.getPerSessionHandlerClassMap().forEach((handler, paths) ->{
+        putHandlersMappings(urlMap,  (JsonRpcHandler<?>) ctx.getBean("perSessionJsonRpcHandler", null, handler), paths);
+      });
 
-      for (Entry<Class<? extends JsonRpcHandler<?>>, List<String>> e : registration
-          .getPerSessionHandlerClassMap().entrySet()) {
-
-        Class<? extends JsonRpcHandler<?>> handlerClass = e.getKey();
-        JsonRpcHandler<?> handler =
-            (JsonRpcHandler<?>) ctx.getBean("perSessionJsonRpcHandler", null, handlerClass);
-        List<String> paths = e.getValue();
-        putHandlersMappings(urlMap, handler, paths);
-      }
-    }
-
-    SimpleUrlHandlerMapping hm = new SimpleUrlHandlerMapping();
-    hm.setUrlMap(urlMap);
-    hm.setOrder(1);
-    return hm;
+    });
+      SimpleUrlHandlerMapping hm = new SimpleUrlHandlerMapping();
+      hm.setUrlMap(urlMap);
+      hm.setOrder(1);
+      return hm;
   }
 
-  private void putHandlersMappings(Map<String, Object> urlMap, JsonRpcHandler<?> handler,
+   private void putHandlersMappings(Map<String, Object> urlMap, JsonRpcHandler<?> handler,
       List<String> paths) {
+     JsonRpcHttpRequestHandler requestHandler =
+             new JsonRpcHttpRequestHandler((ProtocolManager) ctx.getBean("protocolManager", handler));
 
-    JsonRpcHttpRequestHandler requestHandler =
-        new JsonRpcHttpRequestHandler((ProtocolManager) ctx.getBean("protocolManager", handler));
+     for (String path : paths) {
+       urlMap.put(path, requestHandler);
+     }
+   }
 
-    for (String path : paths) {
-      urlMap.put(path, requestHandler);
-    }
+  @Bean
+  public WebSocketHandlerAdapter handlerAdapter() {
+    return new WebSocketHandlerAdapter();
   }
 
   // ---------------- Websockets -------------------
-  @Override
-  public void registerWebSocketHandlers(WebSocketHandlerRegistry wsHandlerRegistry) {
+  /*@Override
+  public void registerWebSocketHandlers(JsonRpcHandlerRegistry wsHandlerRegistry) {
 
     DefaultJsonRpcHandlerRegistry registry = getJsonRpcHandlersRegistry();
 
@@ -178,12 +166,28 @@ public class JsonRpcConfiguration implements WebSocketConfigurer {
       }
 
     }
-  }
+  }*/
 
-  private void publishWebSocketEndpoint(WebSocketHandlerRegistry wsHandlerRegistry,
-      JsonRpcHandler<?> handler, List<String> paths) {
+ /* @Override
+  public void registerJsonRpcHandlers(JsonRpcHandlerRegistry wsHandlerRegistry) {
+    DefaultJsonRpcHandlerRegistry defaultJsonRpcHandlerRegistry = getJsonRpcHandlersRegistry();
+    defaultJsonRpcHandlerRegistry.getRegistrations().forEach(registration ->{
+      registration.getHandlerMap().forEach((handler, paths) -> publishWebSocketEndpoint(wsHandlerRegistry, handler, paths));
+      registration.getPerSessionHandlerBeanNameMap().forEach((key, list)-> publishWebSocketEndpoint(wsHandlerRegistry,
+              (JsonRpcHandler<?>) ctx.getBean("perSessionJsonRpcHandler", key, null),
+              list));
 
-    ProtocolManager protocolManager = (ProtocolManager) ctx.getBean("protocolManager", handler);
+      registration.getPerSessionHandlerClassMap()
+              .forEach((handlerClass, paths) -> publishWebSocketEndpoint(
+                      wsHandlerRegistry, (JsonRpcHandler<?>) ctx.getBean(
+                              "perSessionJsonRpcHandler", null, handlerClass), paths));
+    });
+  }*/
+
+ /*private void publishWebSocketEndpoint(JsonRpcHandlerRegistry wsHandlerRegistry,
+                                       JsonRpcHandler<?> handler, List<String> paths) {
+
+  /*  ProtocolManager protocolManager = (ProtocolManager) ctx.getBean("protocolManager", handler);
 
     JsonRpcWebSocketHandler wsHandler = new JsonRpcWebSocketHandler(protocolManager);
 
@@ -191,10 +195,10 @@ public class JsonRpcConfiguration implements WebSocketConfigurer {
 
     for (String path : paths) {
 
-      WebSocketHandlerRegistration registration = wsHandlerRegistry.addHandler(wsHandler, path);
+      JsonRpcHandlerRegistry registration = (JsonRpcHandlerRegistry) wsHandlerRegistry.addHandler(handler, path);
 
       List<String> origins = handler.allowedOrigins();
-      registration.setAllowedOrigins(origins.toArray(new String[origins.size()]));
+     // registration.setAllowedOrigins(origins.toArray(new String[0]));
 
       if (handler.isSockJSEnabled()) {
         registration.withSockJS().setSessionCookieNeeded(false);
@@ -215,7 +219,7 @@ public class JsonRpcConfiguration implements WebSocketConfigurer {
       registration.addInterceptors(interceptors);
       
     }
-  }
+  }*/
 
   // This methods workaround the bug
   // https://jira.springsource.org/browse/SPR-10841
@@ -223,7 +227,7 @@ public class JsonRpcConfiguration implements WebSocketConfigurer {
   public TomcatServletWebServerFactory tomcatContainerFactory() {
 	  TomcatServletWebServerFactory factory = new TomcatServletWebServerFactory();
     factory.setTomcatContextCustomizers(
-        Arrays.asList(new TomcatContextCustomizer[] { tomcatContextCustomizer() }));
+            Collections.singletonList(tomcatContextCustomizer()));
     return factory;
   }
 

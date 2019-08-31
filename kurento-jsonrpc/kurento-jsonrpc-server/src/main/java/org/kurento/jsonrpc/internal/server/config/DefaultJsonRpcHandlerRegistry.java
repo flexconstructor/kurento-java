@@ -22,16 +22,8 @@ import java.util.List;
 import org.kurento.jsonrpc.JsonRpcHandler;
 import org.kurento.jsonrpc.server.JsonRpcHandlerRegistration;
 import org.kurento.jsonrpc.server.JsonRpcHandlerRegistry;
-import org.springframework.web.socket.WebSocketHandler;
-import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
 
-/**
- * A {@link WebSocketHandlerRegistry} that maps {@link WebSocketHandler}s to URLs for use in a
- * Servlet container.
- *
- * @author Rossen Stoyanchev
- * @since 4.0
- */
+
 public class DefaultJsonRpcHandlerRegistry implements JsonRpcHandlerRegistry {
 
   private final List<DefaultJsonRpcHandlerRegistration> registrations = new ArrayList<>();
