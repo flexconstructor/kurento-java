@@ -365,6 +365,11 @@
 				<artifactId>kms-api-filters</artifactId>
 				<version>${version.kms-api-filters}</version>
 			</dependency>
+			<dependency>
+				<groupId>org.kurento.reactive</groupId>
+				<artifactId>kurento-reactive-jsonrpc-server</artifactId>
+				<version>${version.kurento-java}</version>
+			</dependency>
 
 			<!-- Webjars -->
 			<dependency>
