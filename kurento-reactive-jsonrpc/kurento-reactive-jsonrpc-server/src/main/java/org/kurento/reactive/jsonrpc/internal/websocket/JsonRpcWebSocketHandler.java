@@ -77,18 +77,7 @@ public class JsonRpcWebSocketHandler implements WebSocketHandler {
                 log.warn(exceptionMessage);
                 throw new KurentoException(exceptionMessage);
             }
-        }).map(jsonObjectMono -> this.protocolManager.processMessage(jsonObjectMono, factory, new TransactionImpl.ResponseSender() {
-            @Override
-            public void sendResponse(Message message) throws IOException {
-                messageQueue.add(message);
-
-            }
-
-            @Override
-            public void sendPingResponse(Message message) throws IOException {
-                messageQueue.add(message);
-            }
-        }, webSocketSession.getId()))
+        }).map(jsonObjectMono -> this.protocolManager.processMessage(jsonObjectMono, factory,  webSocketSession.getId()))
                 .doOnNext(monoResponse ->{
                     monoResponse.map((Function<Response, Object>) messageQueue::add);
                 })

@@ -40,7 +40,7 @@ public class SessionsManager {
   private final ConcurrentHashMap<String, ServerSession> sessions = new ConcurrentHashMap<>();
   private final ConcurrentHashMap<String, ServerSession> sessionsByTransportId = new ConcurrentHashMap<>();
 
-  public void put(ServerSession session) {
+  void put(ServerSession session) {
 
     sessions.put(session.getSessionId(), session);
 
@@ -53,31 +53,23 @@ public class SessionsManager {
     }
   }
 
-  public ServerSession get(String sessionId) {
+  ServerSession get(String sessionId) {
     return sessions.get(sessionId);
   }
 
-  public ServerSession getByTransportId(String transportId) {
+  ServerSession getByTransportId(String transportId) {
     return sessionsByTransportId.get(transportId);
   }
 
-  public ServerSession removeByTransportId(String transportId) {
-    ServerSession session = sessionsByTransportId.remove(transportId);
-    if (session != null) {
-      sessions.remove(session.getSessionId());
-    }
-    return session;
-  }
 
-  public ServerSession remove(String sessionId) {
+  void remove(String sessionId) {
     ServerSession session = sessions.remove(sessionId);
     if (session != null) {
       sessionsByTransportId.remove(session.getTransportId());
     }
-    return session;
   }
 
-  public void updateTransportId(ServerSession session, String oldTransportId) {
+  void updateTransportId(ServerSession session, String oldTransportId) {
     if (oldTransportId != null) {
       sessionsByTransportId.remove(oldTransportId);
     }
@@ -87,7 +79,7 @@ public class SessionsManager {
     }
   }
 
-  public void remove(ServerSession session) {
+  void remove(ServerSession session) {
     remove(session.getSessionId());
   }
 

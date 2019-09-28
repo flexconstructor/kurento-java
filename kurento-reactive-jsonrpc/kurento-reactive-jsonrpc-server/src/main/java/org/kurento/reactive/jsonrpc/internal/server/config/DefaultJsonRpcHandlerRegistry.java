@@ -16,20 +16,13 @@
 
 package org.kurento.reactive.jsonrpc.internal.server.config;
 
-import org.kurento.jsonrpc.JsonRpcHandler;
+import org.kurento.reactive.jsonrpc.JsonRpcHandler;
 import org.kurento.reactive.jsonrpc.server.JsonRpcHandlerRegistration;
 import org.kurento.reactive.jsonrpc.server.JsonRpcHandlerRegistry;
 
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * A {@link WebSocketHandlerRegistry} that maps {@link WebSocketHandler}s to URLs for use in a
- * Servlet container.
- *
- * @author Rossen Stoyanchev
- * @since 4.0
- */
 public class DefaultJsonRpcHandlerRegistry implements JsonRpcHandlerRegistry {
 
   private final List<DefaultJsonRpcHandlerRegistration> registrations = new ArrayList<>();
@@ -44,28 +37,8 @@ public class DefaultJsonRpcHandlerRegistry implements JsonRpcHandlerRegistry {
     return registration;
   }
 
-  @Override
-  public JsonRpcHandlerRegistration addPerSessionHandler(
-      Class<? extends JsonRpcHandler<?>> handlerClass, String... paths) {
 
-    DefaultJsonRpcHandlerRegistration registration = new DefaultJsonRpcHandlerRegistration();
-    registration.addPerSessionHandler(handlerClass, paths);
-    this.registrations.add(registration);
-    return registration;
-
-  }
-
-  @Override
-  public JsonRpcHandlerRegistration addPerSessionHandler(String beanName, String... paths) {
-
-    DefaultJsonRpcHandlerRegistration registration = new DefaultJsonRpcHandlerRegistration();
-    registration.addPerSessionHandler(beanName, paths);
-    this.registrations.add(registration);
-    return registration;
-
-  }
-
-  public List<DefaultJsonRpcHandlerRegistration> getRegistrations() {
+  List<DefaultJsonRpcHandlerRegistration> getRegistrations() {
     return registrations;
   }
 

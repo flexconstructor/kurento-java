@@ -1,8 +1,8 @@
 package org.kurento.reactive.jsonrpc.internal.server.config;
 
-import org.kurento.jsonrpc.JsonRpcHandler;
-import org.kurento.reactive.jsonrpc.internal.server.PerSessionJsonRpcHandler;
+import org.kurento.reactive.jsonrpc.JsonRpcHandler;
 import org.kurento.reactive.jsonrpc.internal.server.ProtocolManager;
+import org.kurento.reactive.jsonrpc.internal.server.SessionsManager;
 import org.kurento.reactive.jsonrpc.internal.websocket.JsonRpcWebSocketHandler;
 import org.kurento.reactive.jsonrpc.server.JsonRpcConfigurer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,12 +10,11 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.web.reactive.HandlerMapping;
 import org.springframework.web.reactive.handler.SimpleUrlHandlerMapping;
 import org.springframework.web.reactive.socket.WebSocketHandler;
 import org.springframework.web.reactive.socket.server.support.WebSocketHandlerAdapter;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.UnicastProcessor;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -34,9 +33,7 @@ public abstract class JsonRpcConfiguration implements JsonRpcConfigurer {
     private DefaultJsonRpcHandlerRegistry getJsonRpcHandlersRegistry() {
         if (instanceRegistry == null) {
             instanceRegistry = new DefaultJsonRpcHandlerRegistry();
-            for (JsonRpcConfigurer configurer : this.configurers) {
-                configurer.registerJsonRpcHandlers(instanceRegistry);
-            }
+            this.configurers.forEach(jsonRpcConfigurer -> jsonRpcConfigurer.registerJsonRpcHandlers(instanceRegistry));
         }
         return instanceRegistry;
     }
@@ -45,17 +42,13 @@ public abstract class JsonRpcConfiguration implements JsonRpcConfigurer {
     HandlerMapping jsonRpcHandlerMapping() {
         Map<String, WebSocketHandler> urlMap = new LinkedHashMap<>();
         getJsonRpcHandlersRegistry().getRegistrations().forEach(registration -> {
-            registration.getHandlerMap().forEach((handler, paths) -> {
-                putHandlersMappings(urlMap, handler, paths);
-            });
-            registration.getPerSessionHandlerClassMap().forEach((handler, paths) -> {
-                putHandlersMappings(urlMap,
-                        (JsonRpcHandler<?>) ctx.getBean("perSessionJsonRpcHandler", handler, null),
-                        paths);
-            });
-            registration.getPerSessionHandlerClassMap().forEach((handler, paths) -> {
-                putHandlersMappings(urlMap, (JsonRpcHandler<?>) ctx.getBean("perSessionJsonRpcHandler", null, handler), paths);
-            });
+            registration.getHandlerMap().forEach((handler, paths) ->
+                putHandlersMappings(urlMap, handler, paths));
+            registration.getPerSessionHandlerClassMap().forEach((handler, paths) -> putHandlersMappings(urlMap,
+                    (JsonRpcHandler<?>) ctx.getBean("perSessionJsonRpcHandler", handler, null),
+                    paths));
+            registration.getPerSessionHandlerClassMap().forEach((handler, paths) ->
+                putHandlersMappings(urlMap, (JsonRpcHandler<?>) ctx.getBean("perSessionJsonRpcHandler", null, handler), paths));
         });
 
         SimpleUrlHandlerMapping handlerMapping = new SimpleUrlHandlerMapping();
@@ -73,23 +66,14 @@ public abstract class JsonRpcConfiguration implements JsonRpcConfigurer {
     @Bean
     @Scope("prototype")
     public ProtocolManager protocolManager(JsonRpcHandler<?> handler) {
-        return new ProtocolManager(handler);
+        return new ProtocolManager(handler, ctx.getBean(SessionsManager.class), ctx.getBean(TaskScheduler.class));
     }
 
-    @Bean
-    @Scope("prototype")
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    public PerSessionJsonRpcHandler<?> perSessionJsonRpcHandler(String beanName,
-                                                                Class<? extends JsonRpcHandler<?>> beanClass) {
-        return new PerSessionJsonRpcHandler(beanName, beanClass);
-    }
 
     private void putHandlersMappings(Map<String, WebSocketHandler> urlMap, JsonRpcHandler<?> handler,
                                      List<String> paths) {
         JsonRpcWebSocketHandler rpcWebSocketHandler = new JsonRpcWebSocketHandler(protocolManager(handler));
-        paths.forEach(path -> {
-            urlMap.put(path, rpcWebSocketHandler);
-        });
+        paths.forEach(path -> urlMap.put(path, rpcWebSocketHandler));
     }
 
 }

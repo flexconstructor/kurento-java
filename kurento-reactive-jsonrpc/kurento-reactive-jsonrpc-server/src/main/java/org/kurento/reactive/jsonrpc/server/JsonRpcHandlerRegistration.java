@@ -17,7 +17,7 @@
 
 package org.kurento.reactive.jsonrpc.server;
 
-import org.kurento.jsonrpc.JsonRpcHandler;
+import org.kurento.reactive.jsonrpc.JsonRpcHandler;
 
 /**
  * Provides methods for configuring a JsonRpcHandler handler.

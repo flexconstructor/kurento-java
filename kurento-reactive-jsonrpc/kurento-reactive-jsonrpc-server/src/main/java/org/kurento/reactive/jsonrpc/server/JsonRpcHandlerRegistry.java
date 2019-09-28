@@ -17,7 +17,7 @@
 
 package org.kurento.reactive.jsonrpc.server;
 
-import org.kurento.jsonrpc.JsonRpcHandler;
+import org.kurento.reactive.jsonrpc.JsonRpcHandler;
 
 public interface JsonRpcHandlerRegistry {
 
@@ -29,10 +29,4 @@ public interface JsonRpcHandlerRegistry {
    * @return The handler registration object
    */
   JsonRpcHandlerRegistration addHandler(JsonRpcHandler<?> jsonRpcHandler, String... paths);
-
-  JsonRpcHandlerRegistration addPerSessionHandler(Class<? extends JsonRpcHandler<?>> handlerClass,
-                                                  String... string);
-
-  JsonRpcHandlerRegistration addPerSessionHandler(String beanName, String... string);
-
 }

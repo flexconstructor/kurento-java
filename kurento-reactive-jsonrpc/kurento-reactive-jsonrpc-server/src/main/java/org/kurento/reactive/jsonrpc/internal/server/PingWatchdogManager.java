@@ -30,7 +30,7 @@ public class PingWatchdogManager {
   private static final Logger log = LoggerFactory.getLogger(PingWatchdogManager.class);
 
   public interface NativeSessionCloser {
-    public void closeSession(String transportId);
+    void closeSession(String transportId);
   }
 
   private static final long NUM_NO_PINGS_TO_CLOSE = 3;
@@ -55,11 +55,11 @@ public class PingWatchdogManager {
       }
     };
 
-    public PingWatchdogSession(String transportId) {
+    PingWatchdogSession(String transportId) {
       this.transportId = transportId;
     }
 
-    public void pingReceived(long interval) {
+    void pingReceived(long interval) {
 
       if (pingInterval == -1) {
 
@@ -88,11 +88,11 @@ public class PingWatchdogManager {
           new Date(System.currentTimeMillis() + NUM_NO_PINGS_TO_CLOSE * pingInterval));
     }
 
-    public void setSessionId(String sessionId) {
+    void setSessionId(String sessionId) {
       this.sessionId = sessionId;
     }
 
-    public void setTransportId(String transportId) {
+    void setTransportId(String transportId) {
       this.transportId = transportId;
       disablePingWatchdog();
 
@@ -106,7 +106,7 @@ public class PingWatchdogManager {
       }
     }
 
-    public void disablePingWatchdog() {
+    void disablePingWatchdog() {
       if (lastTask != null) {
         lastTask.cancel(false);
       }
@@ -118,19 +118,19 @@ public class PingWatchdogManager {
   private TaskScheduler taskScheduler;
   private NativeSessionCloser closer;
 
-  public PingWatchdogManager(TaskScheduler taskScheduler, NativeSessionCloser closer) {
+  PingWatchdogManager(TaskScheduler taskScheduler, NativeSessionCloser closer) {
     this.taskScheduler = taskScheduler;
     this.closer = closer;
   }
 
-  public void associateSessionId(String transportId, String sessionId) {
+  void associateSessionId(String transportId, String sessionId) {
     if (pingWachdog) {
       PingWatchdogSession session = getOrCreatePingSession(transportId);
       session.setSessionId(sessionId);
     }
   }
 
-  public void pingReceived(String transportId, long interval) {
+  void pingReceived(String transportId, long interval) {
     if (pingWachdog) {
       PingWatchdogSession session = getOrCreatePingSession(transportId);
       session.pingReceived(interval);
@@ -152,7 +152,7 @@ public class PingWatchdogManager {
     this.pingWachdog = pingWachdog;
   }
 
-  public void removeSession(ServerSession session) {
+  void removeSession(ServerSession session) {
     log.debug("Removed PingWatchdogSession for transportId {}", session.getTransportId());
     PingWatchdogSession pingSession = sessions.remove(session.getTransportId());
     if (pingSession != null) {
@@ -160,7 +160,7 @@ public class PingWatchdogManager {
     }
   }
 
-  public synchronized void updateTransportId(String transportId, String oldTransportId) {
+  synchronized void updateTransportId(String transportId, String oldTransportId) {
     PingWatchdogSession session = sessions.remove(oldTransportId);
     if (session != null) {
       log.debug("Updated with new transportId {} the session with old transportId {}", transportId,
