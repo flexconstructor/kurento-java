@@ -95,7 +95,7 @@ public class ProtocolManager {
         return Mono.just(messagetJsonObject);
     }
 
-    private Mono<Request<JsonElement>> convertToRequest(Mono<JsonObject> source) {
+    public Mono<Request<JsonElement>> convertToRequest(Mono<JsonObject> source) {
         return source.map(jsonpObject -> JsonUtils.fromJsonRequest(jsonpObject, JsonElement.class));
     }
 
@@ -132,44 +132,10 @@ public class ProtocolManager {
                     return processPingMessage(requestJsonObject, transportId);
                 case METHOD_CLOSE:
                     return processCloseMessage(requestJsonObject, transportId);
-                case Request.POLL_METHOD_NAME:
-
                 default:
-
                     return this.handler.handleRequest(requestJsonObject, getOrCreateSession(factory, transportId, request));
             }
         });
-
-       /*return  requestJsonObject.flatMap(jsonObject -> this.convertToRequest(requestJsonObject)).map(requestMono -> requestMono(request ->{
-        switch (request.getMethod()){
-          case METHOD_CONNECT:
-            return processReconnectMessage(factory, requestMono, transportId);
-          case METHOD_PING:
-            return processPingMessage(requestMono, transportId);
-          case METHOD_CLOSE:
-            return processCloseMessage(Mono.just(request), transportId);
-          default:
-           /* final ServerSession session = getOrCreateSession(factory, transportId, request);
-            log.debug("{} Req-> {} [jsonRpcSessionId={}, transportId={}]", label, request,
-                    session.getSessionId(), transportId);
-            if (request.getMethod().equals(Request.POLL_METHOD_NAME)) {
-              Type collectionType = new TypeToken<List<Response<JsonElement>>>() {
-              }.getType();
-
-              List<Response<JsonElement>> responseList = JsonUtils.fromJson(request.getParams(),
-                      collectionType);
-              responseList.forEach(session::handleResponse);
-            }else{
-
-
-
-            }
-            return Mono.just(new Response<Object>(request.getId(), Collections.emptyList()));
-              return this.handler.handleRequest(requestMono, getOrCreateSession(factory, transportId, request));
-        }
-
-      }));*/
-
     }
 
 
@@ -229,25 +195,6 @@ public class ProtocolManager {
     }
 
     private Mono<Response<JsonElement>> processPingMessage(Mono<Request<JsonElement>> monoRequest, String transportId) {
-
-      /*  return monoRequest.flatMap(request -> {
-            if (maxHeartbeats == 0 || maxHeartbeats > ++heartbeats) {
-                long interval;
-                if (request.getParams() != null) {
-                    JsonObject element = (JsonObject) request.getParams();
-                    if (element.has(INTERVAL_PROPERTY)) {
-                        interval = element.get(INTERVAL_PROPERTY).getAsLong();
-                        pingWachdogManager.pingReceived(transportId, interval);
-                        String sessionId = request.getSessionId();
-                        JsonObject pongPayload = new JsonObject();
-                        pongPayload.add(PONG_PAYLOAD, new JsonPrimitive(PONG));
-                        return Mono.just(new Response<JsonElement>(sessionId, request.getId(), pongPayload));
-                    }
-                }
-            }
-            return new Response();
-        });*/
-        //return Mono.just(new Response<JsonElement>());
 
         return monoRequest.map(request -> {
             long interval;
