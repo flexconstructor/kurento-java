@@ -20,6 +20,7 @@ package org.kurento.reactive.jsonrpc.internal.server;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+import lombok.RequiredArgsConstructor;
 import org.kurento.commons.SecretGenerator;
 import org.kurento.jsonrpc.JsonUtils;
 import org.kurento.jsonrpc.message.Request;
@@ -28,14 +29,13 @@ import org.kurento.jsonrpc.message.ResponseError;
 import org.kurento.reactive.jsonrpc.JsonRpcHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.TaskScheduler;
 import reactor.core.publisher.Mono;
 
-import javax.annotation.PostConstruct;
 import java.io.IOException;
 
 import static org.kurento.jsonrpc.internal.JsonRpcConstants.*;
 
+@RequiredArgsConstructor
 public class ProtocolManager {
 
     private static final String CLIENT_CLOSED_CLOSE_REASON = "Client sent close message";
@@ -55,37 +55,12 @@ public class ProtocolManager {
 
     private final JsonRpcHandler<?> handler;
 
-
     private final SessionsManager sessionsManager;
 
-    private final TaskScheduler taskScheduler;
+    private final PingWatchdogManager pingWachdogManager;
 
 
     private String label = "";
-
-    private PingWatchdogManager pingWachdogManager;
-
-    public ProtocolManager(JsonRpcHandler<?> handler, SessionsManager sessionsManager, TaskScheduler taskScheduler) {
-        this.handler = handler;
-        this.sessionsManager = sessionsManager;
-        this.taskScheduler = taskScheduler;
-    }
-
-    @PostConstruct
-    private void postConstruct() {
-
-        PingWatchdogManager.NativeSessionCloser nativeSessionCloser = transportId -> {
-            ServerSession serverSession = sessionsManager.getByTransportId(transportId);
-            if (serverSession != null) {
-                serverSession.closeNativeSession("Close for not receive ping from client");
-            } else {
-                log.warn("Ping wachdog trying to close a non-registered ServerSession");
-            }
-        };
-
-        this.pingWachdogManager = new PingWatchdogManager(taskScheduler, nativeSessionCloser);
-    }
-
 
     public Mono<JsonObject> convertToJsonObject(String message) {
         JsonObject messagetJsonObject = JsonUtils.fromJson(message, JsonObject.class);
@@ -127,13 +102,14 @@ public class ProtocolManager {
         return requestJsonObject.flatMap(request -> {
             switch (request.getMethod()) {
                 case METHOD_CONNECT:
-                    return processReconnectMessage(factory, requestJsonObject, transportId);
+                    return processReconnectMessage(factory, Mono.fromSupplier(() -> request), transportId);
                 case METHOD_PING:
-                    return processPingMessage(requestJsonObject, transportId);
+                    return processPingMessage(Mono.fromSupplier(() -> request), transportId);
                 case METHOD_CLOSE:
-                    return processCloseMessage(requestJsonObject, transportId);
+                    return processCloseMessage(Mono.fromSupplier(() -> request), transportId);
                 default:
-                    return this.handler.handleRequest(requestJsonObject, getOrCreateSession(factory, transportId, request));
+                    return this.handler.handleRequest(Mono.fromSupplier(() -> request), getOrCreateSession(factory,
+                            transportId, request));
             }
         });
     }
@@ -319,5 +295,4 @@ public class ProtocolManager {
             session.getCloseTimerTask().cancel(false);
         }
     }
-
 }

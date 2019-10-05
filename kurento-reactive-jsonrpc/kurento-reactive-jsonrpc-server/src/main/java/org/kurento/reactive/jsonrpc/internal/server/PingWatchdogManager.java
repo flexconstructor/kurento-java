@@ -118,7 +118,7 @@ public class PingWatchdogManager {
   private TaskScheduler taskScheduler;
   private NativeSessionCloser closer;
 
-  PingWatchdogManager(TaskScheduler taskScheduler, NativeSessionCloser closer) {
+  public PingWatchdogManager(TaskScheduler taskScheduler, NativeSessionCloser closer) {
     this.taskScheduler = taskScheduler;
     this.closer = closer;
   }

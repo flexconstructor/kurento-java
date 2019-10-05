@@ -1,7 +1,9 @@
 package org.kurento.reactive.jsonrpc.internal.server.config;
 
 import org.kurento.reactive.jsonrpc.JsonRpcHandler;
+import org.kurento.reactive.jsonrpc.internal.server.PingWatchdogManager;
 import org.kurento.reactive.jsonrpc.internal.server.ProtocolManager;
+import org.kurento.reactive.jsonrpc.internal.server.ServerSession;
 import org.kurento.reactive.jsonrpc.internal.server.SessionsManager;
 import org.kurento.reactive.jsonrpc.internal.websocket.JsonRpcWebSocketHandler;
 import org.kurento.reactive.jsonrpc.server.JsonRpcConfigurer;
@@ -66,7 +68,19 @@ public abstract class JsonRpcConfiguration implements JsonRpcConfigurer {
     @Bean
     @Scope("prototype")
     public ProtocolManager protocolManager(JsonRpcHandler<?> handler) {
-        return new ProtocolManager(handler, ctx.getBean(SessionsManager.class), ctx.getBean(TaskScheduler.class));
+        return new ProtocolManager(handler, ctx.getBean(SessionsManager.class),this.pingWatchdogManager());
+    }
+
+    @Bean
+    @Scope("prototype")
+    public PingWatchdogManager pingWatchdogManager(){
+        PingWatchdogManager.NativeSessionCloser nativeSessionCloser = transportId -> {
+            ServerSession serverSession = ctx.getBean(SessionsManager.class).getByTransportId(transportId);
+            if (serverSession != null) {
+                serverSession.closeNativeSession("Close for not receive ping from client");
+            }
+        };
+        return new PingWatchdogManager(ctx.getBean(TaskScheduler.class), nativeSessionCloser);
     }
 
 

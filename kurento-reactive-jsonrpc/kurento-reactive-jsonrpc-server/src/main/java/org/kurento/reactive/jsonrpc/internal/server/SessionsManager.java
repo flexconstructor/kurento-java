@@ -57,7 +57,7 @@ public class SessionsManager {
     return sessions.get(sessionId);
   }
 
-  ServerSession getByTransportId(String transportId) {
+  public ServerSession getByTransportId(String transportId) {
     return sessionsByTransportId.get(transportId);
   }
 
