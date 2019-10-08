@@ -12,7 +12,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -30,9 +29,6 @@ public class ProtocolManagerTest {
 
     @Mock
     private SessionsManager sessionsManager;
-
-    @Mock
-    private ThreadPoolTaskScheduler executor;
 
     @Mock
     private PingWatchdogManager pingWatchdogManager;
@@ -153,28 +149,28 @@ public class ProtocolManagerTest {
     }
 
     @Test
-    public void handleCloseSessionTest(){
+    public void handleCloseSessionTest() {
         ScheduledFuture closeTask = Mockito.mock(ScheduledFuture.class);
         Mockito.when(this.session.getCloseTimerTask()).thenReturn(closeTask);
         Mockito.when(this.sessionsManager.getByTransportId(eq("test_transport_id"))).thenReturn(this.session);
         StepVerifier.create(this.protocolManager.processMessage(this.protocolManager
                         .convertToJsonObject("{ 'jsonrpc': '2.0', 'method': 'closeSession', 'id':'5', 'params': {'sessionId': 'test_session_id'}}"),
                 sessionFactory, "test_transport_id")).assertNext(response -> {
-                    assertNotNull(response);
-                    assertEquals(5, response.getId().intValue());
-                    assertEquals("bye", response.getResult());
-                    Mockito.verify(this.session).setGracefullyClosed();
-                    Mockito.verify(closeTask).cancel(eq(false));
-                    try {
-                        Mockito.verify(this.session).close();
-                    } catch (Exception ex){
-                        assertNull(ex);
-                    }
+            assertNotNull(response);
+            assertEquals(5, response.getId().intValue());
+            assertEquals("bye", response.getResult());
+            Mockito.verify(this.session).setGracefullyClosed();
+            Mockito.verify(closeTask).cancel(eq(false));
+            try {
+                Mockito.verify(this.session).close();
+            } catch (Exception ex) {
+                assertNull(ex);
+            }
 
-                    Mockito.verify(this.sessionsManager).remove(eq(this.session));
-                    Mockito.verify(this.pingWatchdogManager).removeSession(eq(this.session));
-                    Mockito.verify(this.jsonRPCHandlerMock).afterConnectionClosed(eq(this.session),
-                            eq("Client sent close message"));
+            Mockito.verify(this.sessionsManager).remove(eq(this.session));
+            Mockito.verify(this.pingWatchdogManager).removeSession(eq(this.session));
+            Mockito.verify(this.jsonRPCHandlerMock).afterConnectionClosed(eq(this.session),
+                    eq("Client sent close message"));
 
         }).verifyComplete();
     }
