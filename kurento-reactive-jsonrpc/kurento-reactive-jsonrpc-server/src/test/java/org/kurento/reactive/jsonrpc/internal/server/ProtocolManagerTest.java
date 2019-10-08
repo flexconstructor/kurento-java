@@ -3,7 +3,6 @@ package org.kurento.reactive.jsonrpc.internal.server;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.kurento.jsonrpc.JsonUtils;
 import org.kurento.jsonrpc.message.Request;
@@ -138,6 +137,48 @@ public class ProtocolManagerTest {
             Mockito.verify(closeTask).cancel(eq(false));
         }).verifyComplete();
     }
+
+    @Test
+    public void handlePingTest() {
+        StepVerifier.create(this.protocolManager.processMessage(this.protocolManager
+                        .convertToJsonObject("{ 'jsonrpc': '2.0', 'method': 'ping', 'id':'4', 'params': {'sessionId': 'test_session_id', 'interval': 1500}}"),
+                sessionFactory, "test_transport_id")).assertNext(response -> {
+            assertNotNull(response);
+            assertTrue(response.getResult() instanceof JsonObject);
+            JsonObject responseJson = (JsonObject) response.getResult();
+            assertTrue(responseJson.has("value"));
+            assertEquals("pong", responseJson.get("value").getAsString());
+            Mockito.verify(this.pingWatchdogManager).pingReceived(eq("test_transport_id"), eq(1500L));
+        }).verifyComplete();
+    }
+
+    @Test
+    public void handleCloseSessionTest(){
+        ScheduledFuture closeTask = Mockito.mock(ScheduledFuture.class);
+        Mockito.when(this.session.getCloseTimerTask()).thenReturn(closeTask);
+        Mockito.when(this.sessionsManager.getByTransportId(eq("test_transport_id"))).thenReturn(this.session);
+        StepVerifier.create(this.protocolManager.processMessage(this.protocolManager
+                        .convertToJsonObject("{ 'jsonrpc': '2.0', 'method': 'closeSession', 'id':'5', 'params': {'sessionId': 'test_session_id'}}"),
+                sessionFactory, "test_transport_id")).assertNext(response -> {
+                    assertNotNull(response);
+                    assertEquals(5, response.getId().intValue());
+                    assertEquals("bye", response.getResult());
+                    Mockito.verify(this.session).setGracefullyClosed();
+                    Mockito.verify(closeTask).cancel(eq(false));
+                    try {
+                        Mockito.verify(this.session).close();
+                    } catch (Exception ex){
+                        assertNull(ex);
+                    }
+
+                    Mockito.verify(this.sessionsManager).remove(eq(this.session));
+                    Mockito.verify(this.pingWatchdogManager).removeSession(eq(this.session));
+                    Mockito.verify(this.jsonRPCHandlerMock).afterConnectionClosed(eq(this.session),
+                            eq("Client sent close message"));
+
+        }).verifyComplete();
+    }
 }
+
 
 //mvn test -DfailIfNoTests=false -Dtest=org.kurento.reactive.jsonrpc.internal.server.ProtocolManagerTest -am
