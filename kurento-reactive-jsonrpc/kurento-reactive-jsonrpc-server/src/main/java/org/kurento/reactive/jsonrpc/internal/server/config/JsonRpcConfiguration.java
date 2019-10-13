@@ -23,6 +23,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.kurento.reactive.jsonrpc.internal.websocket.Status.PING_TIMEOUT_EXCEEDED_CODE;
+import static org.kurento.reactive.jsonrpc.internal.websocket.Status.PING_TIMEOUT_EXCEEDED_DESCRIPTION;
+
 @Configuration
 public abstract class JsonRpcConfiguration implements JsonRpcConfigurer {
 
@@ -77,7 +80,7 @@ public abstract class JsonRpcConfiguration implements JsonRpcConfigurer {
         PingWatchdogManager.NativeSessionCloser nativeSessionCloser = transportId -> {
             ServerSession serverSession = ctx.getBean(SessionsManager.class).getByTransportId(transportId);
             if (serverSession != null) {
-                serverSession.closeNativeSession("Close for not receive ping from client");
+                serverSession.closeNativeSession(PING_TIMEOUT_EXCEEDED_CODE, PING_TIMEOUT_EXCEEDED_DESCRIPTION);
             }
         };
         return new PingWatchdogManager(ctx.getBean(TaskScheduler.class), nativeSessionCloser);

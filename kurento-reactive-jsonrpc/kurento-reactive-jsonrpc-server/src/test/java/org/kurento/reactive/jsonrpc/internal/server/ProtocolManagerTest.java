@@ -69,8 +69,6 @@ public class ProtocolManagerTest {
 
         Request<JsonElement> elementRequest = JsonUtils.fromJsonRequest(jsonObject, JsonElement.class);
         assertNotNull(elementRequest);
-
-
     }
 
     @Test
@@ -173,6 +171,16 @@ public class ProtocolManagerTest {
                     eq("Client sent close message"));
 
         }).verifyComplete();
+    }
+
+    @Test
+    public void processResponseTest() {
+
+        Mockito.when(this.sessionsManager.getByTransportId(eq("test_transport_id"))).thenReturn(this.session);
+        StepVerifier.create(this.protocolManager.processMessage(this.protocolManager
+                        .convertToJsonObject("{ 'jsonrpc': '2.0', 'success': 'Ok'}"),
+                sessionFactory, "test_transport_id")).assertNext(response -> Mockito.verify(this.session)
+                .handleResponse(eq(response)));
     }
 }
 

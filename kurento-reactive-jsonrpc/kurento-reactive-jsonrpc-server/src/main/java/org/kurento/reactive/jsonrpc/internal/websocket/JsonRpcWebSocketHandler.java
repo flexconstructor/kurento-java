@@ -67,9 +67,8 @@ public class JsonRpcWebSocketHandler implements WebSocketHandler {
 
         Queue<Message> messageQueue = new LinkedList<>();
         Flux<Message> outputMessages = Flux.fromIterable(messageQueue);
-
-
-        Mono<Void> input = webSocketSession.receive().map(message -> {
+        Mono<Void> input = webSocketSession.receive()
+       .map(message -> {
             try {
                 return this.protocolManager.convertToJsonObject(message.getPayloadAsText());
             } catch (Exception ex) {
@@ -80,8 +79,8 @@ public class JsonRpcWebSocketHandler implements WebSocketHandler {
         }).map(jsonObjectMono -> this.protocolManager.processMessage(jsonObjectMono, factory,  webSocketSession.getId()))
                 .doOnNext(monoResponse ->{
                     monoResponse.map((Function<Response, Object>) messageQueue::add);
-                })
-                .then();
+                }).then();
+
 
         return  webSocketSession.send(outputMessages.flatMap(message -> Mono.just(message.toString())).map(webSocketSession::textMessage)).and(input);
     }

@@ -4,7 +4,9 @@ import com.google.gson.JsonElement;
 import org.kurento.jsonrpc.message.Response;
 import org.kurento.reactive.jsonrpc.internal.server.ServerSession;
 import org.kurento.reactive.jsonrpc.internal.server.SessionsManager;
+import org.springframework.web.reactive.socket.CloseStatus;
 import org.springframework.web.reactive.socket.WebSocketSession;
+import reactor.core.publisher.Mono;
 
 public class WebSocketServerSession extends ServerSession {
     private WebSocketSession wsSession;
@@ -19,8 +21,8 @@ public class WebSocketServerSession extends ServerSession {
     }
 
     @Override
-    public void closeNativeSession(String reason) {
-
+    public Mono<Void> closeNativeSession(int status, String reason) {
+       return this.wsSession.close(new CloseStatus(status, reason));
     }
 
     public void updateWebSocketSession(WebSocketSession wsSession) {

@@ -26,6 +26,7 @@ import org.kurento.jsonrpc.internal.JsonRpcRequestSenderHelper;
 import org.kurento.jsonrpc.internal.client.AbstractSession;
 import org.kurento.jsonrpc.message.Request;
 import org.kurento.jsonrpc.message.Response;
+import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 import java.util.Map;
@@ -181,7 +182,7 @@ public abstract class ServerSession extends AbstractSession {
     return attributes;
   }
 
-  public abstract void closeNativeSession(String reason);
+  public abstract Mono<Void> closeNativeSession(int status, String reason);
 
   public void processRequest(Runnable task) {
     sessionExecutor.execute(task);
