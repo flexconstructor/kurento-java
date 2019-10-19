@@ -2,11 +2,11 @@ package org.kurento.reactive.jsonrpc.internal.websocket;
 
 import org.kurento.commons.PropertiesManager;
 import org.kurento.commons.exception.KurentoException;
-import org.kurento.jsonrpc.message.Message;
-import org.kurento.jsonrpc.message.Response;
 import org.kurento.reactive.jsonrpc.internal.server.ProtocolManager;
 import org.kurento.reactive.jsonrpc.internal.server.ServerSession;
 import org.kurento.reactive.jsonrpc.internal.server.SessionsManager;
+import org.kurento.reactive.jsonrpc.message.Message;
+import org.kurento.reactive.jsonrpc.message.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.reactive.socket.CloseStatus;
@@ -15,7 +15,6 @@ import org.springframework.web.reactive.socket.WebSocketSession;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import javax.validation.constraints.NotNull;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.atomic.AtomicLong;
@@ -61,7 +60,7 @@ public class JsonRpcWebSocketHandler implements WebSocketHandler {
 
     /**
      * Constructs new instance of JsonRpcWebSocketHandler.
-     * 
+     *
      * @param protocolManager {@link ProtocolManager} instance.
      */
     public JsonRpcWebSocketHandler(ProtocolManager protocolManager) {
@@ -70,9 +69,8 @@ public class JsonRpcWebSocketHandler implements WebSocketHandler {
 
     /**
      * Handle web-socket messages. Just calls {@link ProtocolManager#processMessage(Mono, ProtocolManager.ServerSessionFactory, String)}
-     * 
+     *
      * @param webSocketSession instance of {@link WebSocketSession}
-     *                         
      * @return {@link Mono<Void>}
      */
     @Override

@@ -21,11 +21,11 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import org.kurento.commons.PropertiesManager;
 import org.kurento.commons.ThreadFactoryCreator;
-import org.kurento.jsonrpc.client.Continuation;
-import org.kurento.jsonrpc.internal.JsonRpcRequestSenderHelper;
-import org.kurento.jsonrpc.internal.client.AbstractSession;
-import org.kurento.jsonrpc.message.Request;
-import org.kurento.jsonrpc.message.Response;
+import org.kurento.reactive.jsonrpc.client.Continuation;
+import org.kurento.reactive.jsonrpc.internal.JsonRpcRequestSenderHelper;
+import org.kurento.reactive.jsonrpc.internal.client.AbstractSession;
+import org.kurento.reactive.jsonrpc.message.Request;
+import org.kurento.reactive.jsonrpc.message.Response;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;

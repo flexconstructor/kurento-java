@@ -3,7 +3,7 @@ package org.kurento.reactive.jsonrpc.internal.websocket;
 import com.google.gson.JsonObject;
 import org.junit.Before;
 import org.junit.Test;
-import org.kurento.jsonrpc.message.Response;
+import org.kurento.reactive.jsonrpc.message.Response;
 import org.kurento.reactive.jsonrpc.internal.server.ProtocolManager;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;

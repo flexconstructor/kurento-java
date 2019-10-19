@@ -1,7 +1,7 @@
 package org.kurento.reactive.jsonrpc.internal.websocket;
 
 import com.google.gson.JsonElement;
-import org.kurento.jsonrpc.message.Response;
+import org.kurento.reactive.jsonrpc.message.Response;
 import org.kurento.reactive.jsonrpc.internal.server.ServerSession;
 import org.kurento.reactive.jsonrpc.internal.server.SessionsManager;
 import org.springframework.web.reactive.socket.CloseStatus;

@@ -17,7 +17,7 @@
 
 package org.kurento.reactive.jsonrpc.internal.server;
 
-import org.kurento.jsonrpc.Session;
+import org.kurento.reactive.jsonrpc.Session;
 
 /**
  * This interface will be implemented by JsonRpcHandlers that want a low level handling of requests

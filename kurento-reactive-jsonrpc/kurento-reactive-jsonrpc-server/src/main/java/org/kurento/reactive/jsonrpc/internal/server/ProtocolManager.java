@@ -22,10 +22,10 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import lombok.RequiredArgsConstructor;
 import org.kurento.commons.SecretGenerator;
-import org.kurento.jsonrpc.JsonUtils;
-import org.kurento.jsonrpc.message.Request;
-import org.kurento.jsonrpc.message.Response;
-import org.kurento.jsonrpc.message.ResponseError;
+import org.kurento.reactive.jsonrpc.JsonUtils;
+import org.kurento.reactive.jsonrpc.message.Request;
+import org.kurento.reactive.jsonrpc.message.Response;
+import org.kurento.reactive.jsonrpc.message.ResponseError;
 import org.kurento.reactive.jsonrpc.JsonRpcHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +33,7 @@ import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 
-import static org.kurento.jsonrpc.internal.JsonRpcConstants.*;
+import static org.kurento.reactive.jsonrpc.internal.JsonRpcConstants.*;
 
 /**
  * Defines json rpc protocol manager.

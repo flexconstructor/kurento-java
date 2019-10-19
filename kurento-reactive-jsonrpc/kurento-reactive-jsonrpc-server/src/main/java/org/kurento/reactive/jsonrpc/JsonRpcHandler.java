@@ -1,10 +1,9 @@
 package org.kurento.reactive.jsonrpc;
 
 import com.google.gson.JsonElement;
-import org.kurento.jsonrpc.Session;
-import org.kurento.jsonrpc.message.Request;
-import org.kurento.jsonrpc.message.Response;
 import org.kurento.reactive.jsonrpc.internal.server.ServerSession;
+import org.kurento.reactive.jsonrpc.message.Request;
+import org.kurento.reactive.jsonrpc.message.Response;
 import reactor.core.publisher.Mono;
 
 /**
@@ -34,8 +33,8 @@ public interface JsonRpcHandler<P> {
     /**
      * Process web-socket transport errors.
      *
-     * @param session    {@link ServerSession} instance.
-     * @param exception  {@link Throwable} exception instance.
+     * @param session   {@link ServerSession} instance.
+     * @param exception {@link Throwable} exception instance.
      */
     void handleTransportError(ServerSession session, Throwable exception);
 }
