@@ -23,23 +23,39 @@ import org.kurento.reactive.jsonrpc.server.JsonRpcHandlerRegistry;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Default implementation of {@link JsonRpcHandlerRegistry}.
+ */
 public class DefaultJsonRpcHandlerRegistry implements JsonRpcHandlerRegistry {
 
-  private final List<DefaultJsonRpcHandlerRegistration> registrations = new ArrayList<>();
+    /**
+     * List of JSON RPC handler registrations.
+     */
+    private final List<DefaultJsonRpcHandlerRegistration> registrations = new ArrayList<>();
 
-  @Override
-  public JsonRpcHandlerRegistration addHandler(JsonRpcHandler<?> webSocketHandler,
-                                               String... paths) {
+    /**
+     * Adds new instance of {@link JsonRpcHandler} by path.
+     *
+     * @param webSocketHandler {@link JsonRpcHandler} instance.
+     * @param paths            path.
+     * @return
+     */
+    @Override
+    public JsonRpcHandlerRegistration addHandler(JsonRpcHandler<?> webSocketHandler,
+                                                 String... paths) {
 
-    DefaultJsonRpcHandlerRegistration registration = new DefaultJsonRpcHandlerRegistration();
-    registration.addHandler(webSocketHandler, paths);
-    this.registrations.add(registration);
-    return registration;
-  }
+        DefaultJsonRpcHandlerRegistration registration = new DefaultJsonRpcHandlerRegistration();
+        registration.addHandler(webSocketHandler, paths);
+        this.registrations.add(registration);
+        return registration;
+    }
 
-
-  List<DefaultJsonRpcHandlerRegistration> getRegistrations() {
-    return registrations;
-  }
-
+    /**
+     * Returns list of registrations.
+     *
+     * @return {@link List<DefaultJsonRpcHandlerRegistration>}
+     */
+    List<DefaultJsonRpcHandlerRegistration> getRegistrations() {
+        return registrations;
+    }
 }

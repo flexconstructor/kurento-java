@@ -26,15 +26,33 @@ import java.util.Map;
 import static org.kurento.reactive.jsonrpc.internal.websocket.Status.PING_TIMEOUT_EXCEEDED_CODE;
 import static org.kurento.reactive.jsonrpc.internal.websocket.Status.PING_TIMEOUT_EXCEEDED_DESCRIPTION;
 
+/**
+ * Defines implementation of {@link JsonRpcConfigurer}. Clients application should extend the configuration.
+ */
 @Configuration
 public abstract class JsonRpcConfiguration implements JsonRpcConfigurer {
 
+    /**
+     * Autowired application context.
+     */
     @Autowired
     protected ApplicationContext ctx;
 
+    /**
+     * List of {@link JsonRpcConfigurer}
+     */
     private final List<JsonRpcConfigurer> configurers = Collections.singletonList(this);
+
+    /**
+     * Default JSON RPC handler registry.
+     */
     private DefaultJsonRpcHandlerRegistry instanceRegistry;
 
+    /**
+     * Returns {@link DefaultJsonRpcHandlerRegistry} default instance.
+     *
+     * @return {@link DefaultJsonRpcHandlerRegistry}
+     */
     private DefaultJsonRpcHandlerRegistry getJsonRpcHandlersRegistry() {
         if (instanceRegistry == null) {
             instanceRegistry = new DefaultJsonRpcHandlerRegistry();
@@ -43,17 +61,22 @@ public abstract class JsonRpcConfiguration implements JsonRpcConfigurer {
         return instanceRegistry;
     }
 
+    /**
+     * Returns JSON RPC {@link HandlerMapping}.
+     *
+     * @return {@link HandlerMapping}
+     */
     @Bean
     HandlerMapping jsonRpcHandlerMapping() {
         Map<String, WebSocketHandler> urlMap = new LinkedHashMap<>();
         getJsonRpcHandlersRegistry().getRegistrations().forEach(registration -> {
             registration.getHandlerMap().forEach((handler, paths) ->
-                putHandlersMappings(urlMap, handler, paths));
+                    putHandlersMappings(urlMap, handler, paths));
             registration.getPerSessionHandlerClassMap().forEach((handler, paths) -> putHandlersMappings(urlMap,
                     (JsonRpcHandler<?>) ctx.getBean("perSessionJsonRpcHandler", handler, null),
                     paths));
             registration.getPerSessionHandlerClassMap().forEach((handler, paths) ->
-                putHandlersMappings(urlMap, (JsonRpcHandler<?>) ctx.getBean("perSessionJsonRpcHandler", null, handler), paths));
+                    putHandlersMappings(urlMap, (JsonRpcHandler<?>) ctx.getBean("perSessionJsonRpcHandler", null, handler), paths));
         });
 
         SimpleUrlHandlerMapping handlerMapping = new SimpleUrlHandlerMapping();
@@ -62,21 +85,37 @@ public abstract class JsonRpcConfiguration implements JsonRpcConfigurer {
         return handlerMapping;
     }
 
+    /**
+     * Returns {@link WebSocketHandlerAdapter}.
+     *
+     * @return {@link WebSocketHandlerAdapter}
+     */
     @Bean
     public WebSocketHandlerAdapter handlerAdapter() {
         return new WebSocketHandlerAdapter();
 
     }
 
+    /**
+     * Returns instance of {@link ProtocolManager} for every connection.
+     *
+     * @param handler {@link JsonRpcHandler}
+     * @return {@link ProtocolManager}
+     */
     @Bean
     @Scope("prototype")
     public ProtocolManager protocolManager(JsonRpcHandler<?> handler) {
-        return new ProtocolManager(handler, ctx.getBean(SessionsManager.class),this.pingWatchdogManager());
+        return new ProtocolManager(handler, ctx.getBean(SessionsManager.class), this.pingWatchdogManager());
     }
 
+    /**
+     * Returns {@link PingWatchdogManager} instance for every connection.
+     *
+     * @return {@link PingWatchdogManager}.
+     */
     @Bean
     @Scope("prototype")
-    public PingWatchdogManager pingWatchdogManager(){
+    public PingWatchdogManager pingWatchdogManager() {
         PingWatchdogManager.NativeSessionCloser nativeSessionCloser = transportId -> {
             ServerSession serverSession = ctx.getBean(SessionsManager.class).getByTransportId(transportId);
             if (serverSession != null) {

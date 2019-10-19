@@ -23,24 +23,50 @@ import org.springframework.util.MultiValueMap;
 
 import java.util.Arrays;
 
+/**
+ * Defines default JSON RPC handler registration.
+ */
 public class DefaultJsonRpcHandlerRegistration implements JsonRpcHandlerRegistration {
 
+    /**
+     * Map of JSON RPC handlers.
+     */
     private final MultiValueMap<JsonRpcHandler<?>, String> handlerMap = new LinkedMultiValueMap<>();
+
+    /**
+     * Map of per session handlers (I think is  deprecated)
+     */
     private final MultiValueMap<Class<? extends JsonRpcHandler<?>>, String> perSessionHandlerClassMap =
             new LinkedMultiValueMap<>();
 
+    /**
+     * Adds new {@link JsonRpcHandler} to map.
+     *
+     * @param handler the handler to register
+     * @param paths   paths to register the handler in
+     * @return {@link JsonRpcHandlerRegistration}.
+     */
     @Override
     public JsonRpcHandlerRegistration addHandler(JsonRpcHandler<?> handler, String... paths) {
         this.handlerMap.put(handler, Arrays.asList(paths));
         return this;
     }
 
+    /**
+     * Returns map of handlers.
+     *
+     * @return {@link MultiValueMap<JsonRpcHandler}
+     */
     MultiValueMap<JsonRpcHandler<?>, String> getHandlerMap() {
         return handlerMap;
     }
 
+    /**
+     * Returns per session class map.
+     *
+     * @return {@link MultiValueMap<Class>}}
+     */
     MultiValueMap<Class<? extends JsonRpcHandler<?>>, String> getPerSessionHandlerClassMap() {
         return perSessionHandlerClassMap;
     }
-
 }

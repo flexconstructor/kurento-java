@@ -35,33 +35,82 @@ import java.io.IOException;
 
 import static org.kurento.jsonrpc.internal.JsonRpcConstants.*;
 
+/**
+ * Defines json rpc protocol manager.
+ */
 @RequiredArgsConstructor
 public class ProtocolManager {
 
+    /**
+     * Reason for close web-socket session by client.
+     */
     private static final String CLIENT_CLOSED_CLOSE_REASON = "Client sent close message";
 
+    /**
+     * Ping interval property name.
+     */
     private static final String INTERVAL_PROPERTY = "interval";
 
+    /**
+     * Server session factory interface.
+     */
     public interface ServerSessionFactory {
+
+        /**
+         * Creates new instance of {@link ServerSession}.
+         *
+         * @param sessionId       session id
+         * @param registerInfo    request info object
+         * @param sessionsManager {@link SessionsManager} instance.
+         * @return new instance of server session.
+         */
         ServerSession createSession(String sessionId, Object registerInfo,
                                     SessionsManager sessionsManager);
 
+        /**
+         * Updates {@link ServerSession} after reconnection.
+         *
+         * @param session {@link ServerSession}
+         */
         void updateSessionOnReconnection(ServerSession session);
     }
 
+    /**
+     * Logger instance.
+     */
     private static final Logger log = LoggerFactory.getLogger(ProtocolManager.class);
 
+    /**
+     * Secret generator for string ids.
+     */
     private SecretGenerator secretGenerator = new SecretGenerator();
 
+    /**
+     * Implementation of {@link JsonRpcHandler}.
+     */
     private final JsonRpcHandler<?> handler;
 
+    /**
+     * {@link SessionsManager} instance.
+     */
     private final SessionsManager sessionsManager;
 
+    /**
+     * {@link PingWatchdogManager} instance.
+     */
     private final PingWatchdogManager pingWachdogManager;
 
-
+    /**
+     * Label for logger.
+     */
     private String label = "";
 
+    /**
+     * Converts string message to {@link JsonObject}.
+     *
+     * @param message string message.
+     * @return returns {@link JsonObject}.
+     */
     public Mono<JsonObject> convertToJsonObject(String message) {
         JsonObject messagetJsonObject = JsonUtils.fromJson(message, JsonObject.class);
         if (messagetJsonObject == null) {
@@ -70,7 +119,14 @@ public class ProtocolManager {
         return Mono.just(messagetJsonObject);
     }
 
-    public Mono<Request<JsonElement>> convertToRequest(Mono<JsonObject> source) {
+    /**
+     * Converts {@link JsonObject} to {@link Request}.
+     *
+     * @param source {@link JsonObject} instance.
+     *
+     * @return {@link Request}
+     */
+    Mono<Request<JsonElement>> convertToRequest(Mono<JsonObject> source) {
         return source.map(jsonpObject -> JsonUtils.fromJsonRequest(jsonpObject, JsonElement.class));
     }
 

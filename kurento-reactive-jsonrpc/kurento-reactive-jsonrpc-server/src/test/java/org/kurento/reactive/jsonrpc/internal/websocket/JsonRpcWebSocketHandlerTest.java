@@ -23,22 +23,42 @@ import java.util.Queue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 
+/**
+ * Defines tests for {@link JsonRpcWebSocketHandler}.
+ */
 public class JsonRpcWebSocketHandlerTest {
 
+    /**
+     * Mocked instance of {@link ProtocolManager}.
+     */
     @Mock
     private ProtocolManager protocolManager;
 
+    /**
+     * Mocked instance of {@link Logger}
+     */
     @Mock
     private Logger logger;
 
+    /**
+     * Instance of {@link JsonRpcWebSocketHandler} for tests.
+     */
     @InjectMocks
     private JsonRpcWebSocketHandler handler;
 
+    /**
+     * Initializes all mocks before each tests.
+     */
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
     }
 
+    /**
+     * Tests {@link JsonRpcWebSocketHandler#handle(WebSocketSession)}
+     * Checks assertions:
+     *   {@link ProtocolManager#processMessage(Mono, ProtocolManager.ServerSessionFactory, String)} was called.
+     */
     @Test
     public void handleTest() {
         Response<JsonObject> serverResponse = Mockito.mock(Response.class);
