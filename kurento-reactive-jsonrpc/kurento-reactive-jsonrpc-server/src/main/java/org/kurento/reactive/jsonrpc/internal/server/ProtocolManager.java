@@ -64,15 +64,15 @@ public class ProtocolManager {
          * @param sessionsManager {@link SessionsManager} instance.
          * @return new instance of server session.
          */
-        ServerSession createSession(String sessionId, Object registerInfo,
-                                    SessionsManager sessionsManager);
+        ServerSession<JsonObject> createSession(String sessionId, Object registerInfo,
+                                       SessionsManager sessionsManager);
 
         /**
          * Updates {@link ServerSession} after reconnection.
          *
          * @param session {@link ServerSession}
          */
-        void updateSessionOnReconnection(ServerSession session);
+        void updateSessionOnReconnection(ServerSession<JsonObject> session);
     }
 
     /**
@@ -88,7 +88,7 @@ public class ProtocolManager {
     /**
      * Implementation of {@link JsonRpcHandler}.
      */
-    private final JsonRpcHandler<?> handler;
+    private final JsonRpcHandler<JsonObject> handler;
 
     /**
      * {@link SessionsManager} instance.
@@ -171,10 +171,10 @@ public class ProtocolManager {
     }
 
 
-    private ServerSession getOrCreateSession(ServerSessionFactory factory, String transportId,
-                                             Request<JsonElement> request) {
+    private ServerSession<JsonObject> getOrCreateSession(ServerSessionFactory factory, String transportId,
+                                                Request<JsonElement> request) {
 
-        ServerSession session = null;
+        ServerSession<JsonObject> session = null;
 
         String reqSessionId = request.getSessionId();
 
@@ -207,10 +207,10 @@ public class ProtocolManager {
         return session;
     }
 
-    private ServerSession createSessionAsOldIfKnowByHandler(ServerSessionFactory factory,
-                                                            String reqSessionId) {
+    private ServerSession<JsonObject> createSessionAsOldIfKnowByHandler(ServerSessionFactory factory,
+                                                               String reqSessionId) {
 
-        ServerSession session = null;
+        ServerSession<JsonObject> session = null;
 
         if (this.handler instanceof NativeSessionHandler) {
             NativeSessionHandler nativeHandler = (NativeSessionHandler) handler;
@@ -247,7 +247,7 @@ public class ProtocolManager {
 
     private Mono<Response<?>> processCloseMessage(Mono<Request<JsonElement>> monoRequest, String transportId) {
         return monoRequest.map(request -> {
-            ServerSession session = sessionsManager.getByTransportId(transportId);
+            ServerSession<JsonObject> session = sessionsManager.getByTransportId(transportId);
             if (session != null) {
                 session.setGracefullyClosed();
                 cancelCloseTimer(session);
@@ -266,11 +266,11 @@ public class ProtocolManager {
             String sessionId = request.getSessionId();
             if (sessionId == null) {
 
-                ServerSession session = getOrCreateSession(factory, transportId, request);
+                ServerSession<JsonObject> session = getOrCreateSession(factory, transportId, request);
                 return new Response<Object>(session.getSessionId(), request.getId(), "OK");
             } else {
 
-                ServerSession session = sessionsManager.get(sessionId);
+                ServerSession<JsonObject> session = sessionsManager.get(sessionId);
                 if (session != null) {
 
                     String oldTransportId = session.getTransportId();
@@ -298,10 +298,10 @@ public class ProtocolManager {
         });
     }
 
-    private ServerSession createSession(ServerSessionFactory factory,
-                                        String sessionId) {
+    private ServerSession<JsonObject> createSession(ServerSessionFactory factory,
+                                           String sessionId) {
 
-        ServerSession session = factory.createSession(sessionId, null, sessionsManager);
+        ServerSession<JsonObject> session = factory.createSession(sessionId, null, sessionsManager);
 
         pingWachdogManager.associateSessionId(session.getTransportId(), sessionId);
 
@@ -310,7 +310,7 @@ public class ProtocolManager {
         return session;
     }
 
-    private ServerSession createSession(ServerSessionFactory factory) {
+    private ServerSession<JsonObject> createSession(ServerSessionFactory factory) {
 
         String sessionId = secretGenerator.nextSecret();
 
@@ -322,9 +322,10 @@ public class ProtocolManager {
         return monoJsonObject.flatMap(jsonObject -> {
             Response<JsonElement> response = JsonUtils.fromJsonResponse(jsonObject,
                     JsonElement.class);
-            ServerSession session = sessionsManager.getByTransportId(internalSessionId);
+            ServerSession<JsonObject> session = sessionsManager.getByTransportId(internalSessionId);
             if (session != null) {
-                session.handleResponse(response);
+                // TODO: handle response.
+               // session.handleResponse(response);
             } else {
                 log.debug("Processing response {} for non-existent session {}", response.toString(),
                         internalSessionId);
@@ -333,7 +334,7 @@ public class ProtocolManager {
         });
     }
 
-    private void closeSession(ServerSession session) {
+    private void closeSession(ServerSession<JsonObject> session) {
         log.debug("{} Removing session {} with transportId {} in ProtocolManager", label,
                 session.getSessionId(), session.getTransportId());
         try {
@@ -346,7 +347,7 @@ public class ProtocolManager {
         this.handler.afterConnectionClosed(session, ProtocolManager.CLIENT_CLOSED_CLOSE_REASON);
     }
 
-    private void cancelCloseTimer(ServerSession session) {
+    private void cancelCloseTimer(ServerSession<JsonObject> session) {
         if (session.getCloseTimerTask() != null) {
             session.getCloseTimerTask().cancel(false);
         }

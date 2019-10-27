@@ -16,6 +16,7 @@
 
 package org.kurento.reactive.jsonrpc.internal.server.config;
 
+import com.google.gson.JsonObject;
 import org.kurento.reactive.jsonrpc.JsonRpcHandler;
 import org.kurento.reactive.jsonrpc.server.JsonRpcHandlerRegistration;
 import org.springframework.util.LinkedMultiValueMap;
@@ -31,7 +32,7 @@ public class DefaultJsonRpcHandlerRegistration implements JsonRpcHandlerRegistra
     /**
      * Map of JSON RPC handlers.
      */
-    private final MultiValueMap<JsonRpcHandler<?>, String> handlerMap = new LinkedMultiValueMap<>();
+    private final MultiValueMap<JsonRpcHandler<JsonObject>, String> handlerMap = new LinkedMultiValueMap<>();
 
     /**
      * Map of per session handlers (I think is  deprecated)
@@ -47,7 +48,7 @@ public class DefaultJsonRpcHandlerRegistration implements JsonRpcHandlerRegistra
      * @return {@link JsonRpcHandlerRegistration}.
      */
     @Override
-    public JsonRpcHandlerRegistration addHandler(JsonRpcHandler<?> handler, String... paths) {
+    public JsonRpcHandlerRegistration addHandler(JsonRpcHandler<JsonObject> handler, String... paths) {
         this.handlerMap.put(handler, Arrays.asList(paths));
         return this;
     }
@@ -57,7 +58,7 @@ public class DefaultJsonRpcHandlerRegistration implements JsonRpcHandlerRegistra
      *
      * @return {@link MultiValueMap<JsonRpcHandler}
      */
-    MultiValueMap<JsonRpcHandler<?>, String> getHandlerMap() {
+    MultiValueMap<JsonRpcHandler<JsonObject>, String> getHandlerMap() {
         return handlerMap;
     }
 

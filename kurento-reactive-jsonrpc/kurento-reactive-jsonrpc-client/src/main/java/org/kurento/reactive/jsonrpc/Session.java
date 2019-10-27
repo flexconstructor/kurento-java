@@ -22,7 +22,7 @@ import org.kurento.reactive.jsonrpc.internal.JsonRpcRequestSender;
 import java.io.IOException;
 import java.util.Map;
 
-public interface Session extends JsonRpcRequestSender {
+public interface Session<R> extends JsonRpcRequestSender<R> {
 
   public String getSessionId();
 

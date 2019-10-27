@@ -28,7 +28,7 @@ public interface JsonRpcHandler<P> {
      * @param session {@link ServerSession} server session instance.
      * @param reason  reason for closing web-socket session.
      */
-    void afterConnectionClosed(ServerSession session, String reason);
+    void afterConnectionClosed(ServerSession<P> session, String reason);
 
     /**
      * Process web-socket transport errors.
@@ -36,5 +36,5 @@ public interface JsonRpcHandler<P> {
      * @param session   {@link ServerSession} instance.
      * @param exception {@link Throwable} exception instance.
      */
-    void handleTransportError(ServerSession session, Throwable exception);
+    void handleTransportError(ServerSession<P> session, Throwable exception);
 }

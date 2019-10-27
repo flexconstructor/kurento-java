@@ -16,6 +16,7 @@
 
 package org.kurento.reactive.jsonrpc.internal.server.config;
 
+import com.google.gson.JsonObject;
 import org.kurento.reactive.jsonrpc.JsonRpcHandler;
 import org.kurento.reactive.jsonrpc.server.JsonRpcHandlerRegistration;
 import org.kurento.reactive.jsonrpc.server.JsonRpcHandlerRegistry;
@@ -41,7 +42,7 @@ public class DefaultJsonRpcHandlerRegistry implements JsonRpcHandlerRegistry {
      * @return
      */
     @Override
-    public JsonRpcHandlerRegistration addHandler(JsonRpcHandler<?> webSocketHandler,
+    public JsonRpcHandlerRegistration addHandler(JsonRpcHandler<JsonObject> webSocketHandler,
                                                  String... paths) {
 
         DefaultJsonRpcHandlerRegistration registration = new DefaultJsonRpcHandlerRegistration();

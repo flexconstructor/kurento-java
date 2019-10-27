@@ -17,6 +17,7 @@
 
 package org.kurento.reactive.jsonrpc.internal.server;
 
+import com.google.gson.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.TaskScheduler;
@@ -152,7 +153,7 @@ public class PingWatchdogManager {
     this.pingWachdog = pingWachdog;
   }
 
-  void removeSession(ServerSession session) {
+  void removeSession(ServerSession<JsonObject> session) {
     log.debug("Removed PingWatchdogSession for transportId {}", session.getTransportId());
     PingWatchdogSession pingSession = sessions.remove(session.getTransportId());
     if (pingSession != null) {

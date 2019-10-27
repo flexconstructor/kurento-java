@@ -1,5 +1,6 @@
 package org.kurento.reactive.jsonrpc.internal.server.config;
 
+import com.google.gson.JsonObject;
 import org.kurento.reactive.jsonrpc.JsonRpcHandler;
 import org.kurento.reactive.jsonrpc.internal.server.PingWatchdogManager;
 import org.kurento.reactive.jsonrpc.internal.server.ProtocolManager;
@@ -72,11 +73,6 @@ public abstract class JsonRpcConfiguration implements JsonRpcConfigurer {
         getJsonRpcHandlersRegistry().getRegistrations().forEach(registration -> {
             registration.getHandlerMap().forEach((handler, paths) ->
                     putHandlersMappings(urlMap, handler, paths));
-            registration.getPerSessionHandlerClassMap().forEach((handler, paths) -> putHandlersMappings(urlMap,
-                    (JsonRpcHandler<?>) ctx.getBean("perSessionJsonRpcHandler", handler, null),
-                    paths));
-            registration.getPerSessionHandlerClassMap().forEach((handler, paths) ->
-                    putHandlersMappings(urlMap, (JsonRpcHandler<?>) ctx.getBean("perSessionJsonRpcHandler", null, handler), paths));
         });
 
         SimpleUrlHandlerMapping handlerMapping = new SimpleUrlHandlerMapping();
@@ -104,7 +100,7 @@ public abstract class JsonRpcConfiguration implements JsonRpcConfigurer {
      */
     @Bean
     @Scope("prototype")
-    public ProtocolManager protocolManager(JsonRpcHandler<?> handler) {
+    public ProtocolManager protocolManager(JsonRpcHandler handler) {
         return new ProtocolManager(handler, ctx.getBean(SessionsManager.class), this.pingWatchdogManager());
     }
 
@@ -126,7 +122,7 @@ public abstract class JsonRpcConfiguration implements JsonRpcConfigurer {
     }
 
 
-    private void putHandlersMappings(Map<String, WebSocketHandler> urlMap, JsonRpcHandler<?> handler,
+    private void putHandlersMappings(Map<String, WebSocketHandler> urlMap, JsonRpcHandler<JsonObject> handler,
                                      List<String> paths) {
         JsonRpcWebSocketHandler rpcWebSocketHandler = new JsonRpcWebSocketHandler(protocolManager(handler));
         paths.forEach(path -> urlMap.put(path, rpcWebSocketHandler));

@@ -17,74 +17,131 @@
 
 package org.kurento.reactive.jsonrpc.internal.client;
 
+import org.kurento.reactive.jsonrpc.JsonUtils;
 import org.kurento.reactive.jsonrpc.Session;
+import org.kurento.reactive.jsonrpc.message.Request;
+import org.kurento.reactive.jsonrpc.message.Response;
+import reactor.core.publisher.Mono;
 
-public abstract class AbstractSession implements Session {
+import java.io.IOException;
+import java.util.Map;
 
-  private String sessionId;
-  private Object registerInfo;
-  private boolean newSession = true;
+public abstract class AbstractSession<R> implements Session<R> {
 
-  public AbstractSession(String sessionId, Object registerInfo) {
-    this.sessionId = sessionId;
-    this.registerInfo = registerInfo;
-  }
+    private String sessionId;
+    private Object registerInfo;
+    private boolean newSession = true;
 
-  @Override
-  public Object getRegisterInfo() {
-    return registerInfo;
-  }
-
-  public void setRegisterInfo(Object registerInfo) {
-    this.registerInfo = registerInfo;
-  }
-
-  @Override
-  public String getSessionId() {
-    return sessionId;
-  }
-
-  public void setSessionId(String sessionId) {
-    this.sessionId = sessionId;
-  }
-
-  @Override
-  public boolean isNew() {
-    return newSession;
-  }
-
-  public void setNew(boolean newSession) {
-    this.newSession = newSession;
-  }
-
-  @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + (sessionId == null ? 0 : sessionId.hashCode());
-    return result;
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
+    public AbstractSession(String sessionId, Object registerInfo) {
+        this.sessionId = sessionId;
+        this.registerInfo = registerInfo;
     }
-    if (obj == null) {
-      return false;
+
+    @Override
+    public Object getRegisterInfo() {
+        return registerInfo;
     }
-    if (getClass() != obj.getClass()) {
-      return false;
+
+
+    @Override
+    public String getSessionId() {
+        return sessionId;
     }
-    AbstractSession other = (AbstractSession) obj;
-    if (sessionId == null) {
-      if (other.sessionId != null) {
-        return false;
-      }
-    } else if (!sessionId.equals(other.sessionId)) {
-      return false;
+
+    public void setSessionId(String sessionId) {
+        this.sessionId = sessionId;
     }
-    return true;
-  }
+
+    @Override
+    public boolean isNew() {
+        return newSession;
+    }
+
+    @Override
+    public void close() throws IOException {
+
+    }
+
+    @Override
+    public void setReconnectionTimeout(long millis) {
+
+    }
+
+    @Override
+    public Map<String, Object> getAttributes() {
+        return null;
+    }
+
+    public void setNew(boolean newSession) {
+        this.newSession = newSession;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + (sessionId == null ? 0 : sessionId.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        AbstractSession other = (AbstractSession) obj;
+        if (sessionId == null) {
+            return other.sessionId == null;
+        } else return sessionId.equals(other.sessionId);
+    }
+
+    @Override
+    public Mono<R> sendRequest(String method, Class resultClass) {
+        return this.sendRequest(method, Mono.empty(), resultClass);
+    }
+
+    @Override
+    public Mono<R> sendRequest(String method, Mono<R> paramsMono, Class<R> resultClass) {
+        Mono requestMono = paramsMono.map(params -> {
+            Request<R> request = new Request<>(null, method, (R) params);
+            setIdIfNecessary(request);
+            if (JsonUtils.INJECT_SESSION_ID) {
+                request.setSessionId(sessionId);
+            }
+            return request;
+        });
+        return sendRequest(requestMono, resultClass);
+    }
+
+
+    @Override
+    public Mono<Void> sendNotification(String method, Mono params) {
+        return null;
+    }
+
+    @Override
+    public Mono<Void> sendNotification(String method) {
+        return this.sendNotification(method, Mono.empty());
+    }
+
+    @Override
+    public Mono<Response<R>> sendRequest(Mono<Request<R>> request, Class<R> requestType) {
+        return this.internalSendRequest(request, requestType);
+    }
+
+    public abstract Mono<Response<R>> internalSendRequest(Mono<Request<R>> requestMono, Class<R> requestType);
+
+
+    private void setIdIfNecessary(Request<R> request) {
+        if (request.getId() == null) {
+            request.setId(Integer.valueOf(this.getSessionId()));
+        }
+    }
 
 }

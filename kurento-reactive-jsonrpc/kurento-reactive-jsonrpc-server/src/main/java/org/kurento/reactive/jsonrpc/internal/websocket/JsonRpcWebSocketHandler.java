@@ -1,11 +1,13 @@
 package org.kurento.reactive.jsonrpc.internal.websocket;
 
+import com.google.gson.JsonObject;
 import org.kurento.commons.PropertiesManager;
 import org.kurento.commons.exception.KurentoException;
 import org.kurento.reactive.jsonrpc.internal.server.ProtocolManager;
 import org.kurento.reactive.jsonrpc.internal.server.ServerSession;
 import org.kurento.reactive.jsonrpc.internal.server.SessionsManager;
 import org.kurento.reactive.jsonrpc.message.Message;
+import org.kurento.reactive.jsonrpc.message.Request;
 import org.kurento.reactive.jsonrpc.message.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,21 +83,43 @@ public class JsonRpcWebSocketHandler implements WebSocketHandler {
             webSocketSession.close(CloseStatus.POLICY_VIOLATION);
         }
 
-        ProtocolManager.ServerSessionFactory factory = new ProtocolManager.ServerSessionFactory() {
-            @Override
-            public ServerSession createSession(String sessionId, Object registerInfo,
-                                               SessionsManager sessionsManager) {
-                return new WebSocketServerSession(sessionId, registerInfo, sessionsManager, webSocketSession.getId());
-            }
-
-            @Override
-            public void updateSessionOnReconnection(ServerSession session) {
-                ((WebSocketServerSession) session).updateWebSocketSession(webSocketSession);
-            }
-        };
-
         Queue<Message> messageQueue = new LinkedList<>();
         Flux<Message> outputMessages = Flux.fromIterable(messageQueue);
+
+        ProtocolManager.ServerSessionFactory factory = new ProtocolManager.ServerSessionFactory() {
+            @Override
+            public ServerSession<JsonObject> createSession(String sessionId, Object registerInfo,
+                                                           SessionsManager sessionsManager) {
+
+                return new WebSocketServerSession<JsonObject>(sessionId, registerInfo, sessionsManager, webSocketSession.getId()) {
+                    @Override
+                    public Mono<Response> internalSendRequest(Mono mono, Class requestType) {
+                        return this.processRequest(mono, requestType);
+                    }
+
+                    private Mono<Response<JsonObject>> processRequest(Mono<Request<JsonObject>> requestMono, Class requestType){
+                        requestMono.doOnNext(messageQueue::add);
+                        if(requestType != Void.class) {
+                            return requestMono.flatMap(this::pendingResponse);
+                        }
+                        return Mono.empty();
+                    }
+                };
+            }
+
+            /**
+             * Updates {@link ServerSession} after reconnection.
+             *
+             * @param session {@link ServerSession}
+             */
+            @Override
+            public void updateSessionOnReconnection(ServerSession<JsonObject> session) {
+
+            }
+
+        };
+
+
         Mono<Void> input = webSocketSession.receive()
                 .map(message -> {
                     try {

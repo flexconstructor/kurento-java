@@ -17,6 +17,7 @@
 
 package org.kurento.reactive.jsonrpc.internal.server;
 
+import com.google.gson.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -37,10 +38,10 @@ public class SessionsManager {
 
   private static Logger log = LoggerFactory.getLogger(SessionsManager.class);
 
-  private final ConcurrentHashMap<String, ServerSession> sessions = new ConcurrentHashMap<>();
-  private final ConcurrentHashMap<String, ServerSession> sessionsByTransportId = new ConcurrentHashMap<>();
+  private final ConcurrentHashMap<String, ServerSession<JsonObject>> sessions = new ConcurrentHashMap<>();
+  private final ConcurrentHashMap<String, ServerSession<JsonObject>> sessionsByTransportId = new ConcurrentHashMap<>();
 
-  void put(ServerSession session) {
+  void put(ServerSession<JsonObject> session) {
 
     sessions.put(session.getSessionId(), session);
 
@@ -53,23 +54,23 @@ public class SessionsManager {
     }
   }
 
-  ServerSession get(String sessionId) {
+  ServerSession<JsonObject> get(String sessionId) {
     return sessions.get(sessionId);
   }
 
-  public ServerSession getByTransportId(String transportId) {
+  public ServerSession<JsonObject> getByTransportId(String transportId) {
     return sessionsByTransportId.get(transportId);
   }
 
 
   void remove(String sessionId) {
-    ServerSession session = sessions.remove(sessionId);
+    ServerSession<JsonObject> session = sessions.remove(sessionId);
     if (session != null) {
       sessionsByTransportId.remove(session.getTransportId());
     }
   }
 
-  void updateTransportId(ServerSession session, String oldTransportId) {
+  void updateTransportId(ServerSession<JsonObject> session, String oldTransportId) {
     if (oldTransportId != null) {
       sessionsByTransportId.remove(oldTransportId);
     }
@@ -79,7 +80,7 @@ public class SessionsManager {
     }
   }
 
-  void remove(ServerSession session) {
+  void remove(ServerSession<JsonObject> session) {
     remove(session.getSessionId());
   }
 

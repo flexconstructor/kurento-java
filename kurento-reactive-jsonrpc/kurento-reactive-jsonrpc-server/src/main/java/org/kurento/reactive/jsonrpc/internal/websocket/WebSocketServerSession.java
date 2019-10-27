@@ -1,22 +1,25 @@
 package org.kurento.reactive.jsonrpc.internal.websocket;
 
-import com.google.gson.JsonElement;
-import org.kurento.reactive.jsonrpc.message.Response;
 import org.kurento.reactive.jsonrpc.internal.server.ServerSession;
 import org.kurento.reactive.jsonrpc.internal.server.SessionsManager;
+import org.kurento.reactive.jsonrpc.message.Request;
+import org.kurento.reactive.jsonrpc.message.Response;
 import org.springframework.web.reactive.socket.CloseStatus;
 import org.springframework.web.reactive.socket.WebSocketSession;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 /**
  * {@link ServerSession} implementation.
  */
-public class WebSocketServerSession extends ServerSession {
+public abstract class WebSocketServerSession<T> extends ServerSession<T> {
 
     /**
      * {@link WebSocketSession} instance.
      */
     private WebSocketSession wsSession;
+
+   Flux<Response<T>> responseFlux;
 
     /**
      * Constructs new instance of WebSocketServerSession.
@@ -28,6 +31,7 @@ public class WebSocketServerSession extends ServerSession {
      */
     WebSocketServerSession(String sessionId, Object registerInfo, SessionsManager sessionsManager, String transportId) {
         super(sessionId, registerInfo, sessionsManager, transportId);
+        this.responseFlux = Flux.empty();
     }
 
     /**
@@ -36,7 +40,8 @@ public class WebSocketServerSession extends ServerSession {
      * @param response {@link Response}.
      */
     @Override
-    public void handleResponse(Response<JsonElement> response) {
+    public void handleResponse(Response<T> response) {
+        this.responseFlux.concatWithValues(response);
 
     }
 
@@ -57,9 +62,13 @@ public class WebSocketServerSession extends ServerSession {
      *
      * @param wsSession {@link WebSocketSession} instance.
      */
-    void updateWebSocketSession(WebSocketSession wsSession) {
+    public void updateWebSocketSession(WebSocketSession wsSession) {
         synchronized (wsSession) {
             this.wsSession = wsSession;
         }
+    }
+
+    Mono<Response<T>> pendingResponse(Request<T> request) {
+     return this.responseFlux.skipWhile(response -> response.getId().equals(request.getId())).next();
     }
 }

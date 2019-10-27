@@ -17,6 +17,7 @@
 
 package org.kurento.reactive.jsonrpc.server;
 
+import com.google.gson.JsonObject;
 import org.kurento.reactive.jsonrpc.JsonRpcHandler;
 
 /**
@@ -33,6 +34,6 @@ public interface JsonRpcHandlerRegistration {
    *          paths to register the handler in
    * @return the handler registration
    */
-  JsonRpcHandlerRegistration addHandler(JsonRpcHandler<?> handler, String... paths);
+  JsonRpcHandlerRegistration addHandler(JsonRpcHandler<JsonObject> handler, String... paths);
 
 }
