@@ -91,15 +91,15 @@ public class JsonRpcWebSocketHandler implements WebSocketHandler {
             public ServerSession<JsonObject> createSession(String sessionId, Object registerInfo,
                                                            SessionsManager sessionsManager) {
 
-                return new WebSocketServerSession<JsonObject>(sessionId, registerInfo, sessionsManager, webSocketSession.getId()) {
+                return new WebSocketServerSession<JsonObject>(sessionId, registerInfo, sessionsManager, webSocketSession) {
                     @Override
                     public Mono<Response> internalSendRequest(Mono mono, Class requestType) {
                         return this.processRequest(mono, requestType);
                     }
 
-                    private Mono<Response<JsonObject>> processRequest(Mono<Request<JsonObject>> requestMono, Class requestType){
+                    private Mono<Response<JsonObject>> processRequest(Mono<Request<JsonObject>> requestMono, Class requestType) {
                         requestMono.doOnNext(messageQueue::add);
-                        if(requestType != Void.class) {
+                        if (requestType != Void.class) {
                             return requestMono.flatMap(this::pendingResponse);
                         }
                         return Mono.empty();
@@ -114,9 +114,8 @@ public class JsonRpcWebSocketHandler implements WebSocketHandler {
              */
             @Override
             public void updateSessionOnReconnection(ServerSession<JsonObject> session) {
-
+                session.updateWebSocketSession(webSocketSession);
             }
-
         };
 
 

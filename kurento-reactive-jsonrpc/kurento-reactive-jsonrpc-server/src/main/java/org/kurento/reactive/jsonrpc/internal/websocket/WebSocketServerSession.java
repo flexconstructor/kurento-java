@@ -27,11 +27,12 @@ public abstract class WebSocketServerSession<T> extends ServerSession<T> {
      * @param sessionId       session ID.
      * @param registerInfo    request info.
      * @param sessionsManager {@link SessionsManager} instance.
-     * @param transportId     web-socket session ID.
+     * @param webSocketSession     web-socket session.
      */
-    WebSocketServerSession(String sessionId, Object registerInfo, SessionsManager sessionsManager, String transportId) {
-        super(sessionId, registerInfo, sessionsManager, transportId);
+    WebSocketServerSession(String sessionId, Object registerInfo, SessionsManager sessionsManager, WebSocketSession webSocketSession) {
+        super(sessionId, registerInfo, sessionsManager, webSocketSession.getId());
         this.responseFlux = Flux.empty();
+        this.wsSession = webSocketSession;
     }
 
     /**
@@ -40,9 +41,8 @@ public abstract class WebSocketServerSession<T> extends ServerSession<T> {
      * @param response {@link Response}.
      */
     @Override
-    public void handleResponse(Response<T> response) {
-        this.responseFlux.concatWithValues(response);
-
+    public Flux handleResponse(Response<T> response) {
+        return this.responseFlux.concatWithValues(response);
     }
 
     /**
@@ -69,6 +69,6 @@ public abstract class WebSocketServerSession<T> extends ServerSession<T> {
     }
 
     Mono<Response<T>> pendingResponse(Request<T> request) {
-     return this.responseFlux.skipWhile(response -> response.getId().equals(request.getId())).next();
+     return this.responseFlux.skipWhile(response -> response.getId().equals(request.getId())).single();
     }
 }

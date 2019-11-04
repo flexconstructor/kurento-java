@@ -1,20 +1,3 @@
-/*
- * (C) Copyright 2013 Kurento (http://kurento.org/)
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- */
-
 package org.kurento.reactive.jsonrpc.internal.client;
 
 import org.kurento.reactive.jsonrpc.JsonUtils;
@@ -23,59 +6,90 @@ import org.kurento.reactive.jsonrpc.message.Request;
 import org.kurento.reactive.jsonrpc.message.Response;
 import reactor.core.publisher.Mono;
 
-import java.io.IOException;
-import java.util.Map;
-
+/**
+ * Abstract implementation of {@link Session}.
+ *
+ * @param <R> data type.
+ */
 public abstract class AbstractSession<R> implements Session<R> {
 
+    /**
+     * Session ID.
+     */
     private String sessionId;
-    private Object registerInfo;
+
+    /**
+     * Some request info.
+     */
+    private final Object registerInfo;
+
+    /**
+     * Is a new session.
+     */
     private boolean newSession = true;
 
+    /**
+     * Constructs new instance of AbstractSession with given session ID and request info.
+     *
+     * @param sessionId    Session ID.
+     * @param registerInfo Some request info.
+     */
     public AbstractSession(String sessionId, Object registerInfo) {
         this.sessionId = sessionId;
         this.registerInfo = registerInfo;
     }
 
+    /**
+     * Returns request info
+     *
+     * @return request info.
+     */
     @Override
     public Object getRegisterInfo() {
-        return registerInfo;
+        return this.registerInfo;
     }
 
-
+    /**
+     * Returns session ID.
+     *
+     * @return session ID.
+     */
     @Override
     public String getSessionId() {
-        return sessionId;
+        return this.sessionId;
     }
 
+    /**
+     * Sets session ID.
+     *
+     * @param sessionId {@link String} session ID.
+     */
     public void setSessionId(String sessionId) {
         this.sessionId = sessionId;
     }
 
+    /**
+     * Returns true if is new Session.
+     *
+     * @return boolean.
+     */
     @Override
     public boolean isNew() {
-        return newSession;
+        return this.newSession;
     }
 
-    @Override
-    public void close() throws IOException {
-
-    }
-
-    @Override
-    public void setReconnectionTimeout(long millis) {
-
-    }
-
-    @Override
-    public Map<String, Object> getAttributes() {
-        return null;
-    }
-
+    /**
+     * Sets new value for new session flag.
+     *
+     * @param newSession boolean.
+     */
     public void setNew(boolean newSession) {
         this.newSession = newSession;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -84,6 +98,9 @@ public abstract class AbstractSession<R> implements Session<R> {
         return result;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
@@ -101,11 +118,17 @@ public abstract class AbstractSession<R> implements Session<R> {
         } else return sessionId.equals(other.sessionId);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Mono<R> sendRequest(String method, Class resultClass) {
         return this.sendRequest(method, Mono.empty(), resultClass);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Mono<R> sendRequest(String method, Mono<R> paramsMono, Class<R> resultClass) {
         Mono requestMono = paramsMono.map(params -> {
@@ -119,22 +142,42 @@ public abstract class AbstractSession<R> implements Session<R> {
         return sendRequest(requestMono, resultClass);
     }
 
-
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Mono<Void> sendNotification(String method, Mono params) {
-        return null;
+        return this.sendRequest(params.flatMap(param -> {
+            Request request = new Request();
+            request.setMethod(method);
+            request.setParams(param);
+            return request;
+        }), (Class<R>) Void.class);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Mono<Void> sendNotification(String method) {
         return this.sendNotification(method, Mono.empty());
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Mono<Response<R>> sendRequest(Mono<Request<R>> request, Class<R> requestType) {
         return this.internalSendRequest(request, requestType);
     }
 
+    /**
+     * Sends request to client with given response type.
+     *
+     * @param requestMono {@link Mono<Request>} request.
+     * @param requestType Type of {@link Response}.
+     * @return {@link Mono<Response>}
+     */
     public abstract Mono<Response<R>> internalSendRequest(Mono<Request<R>> requestMono, Class<R> requestType);
 
 
@@ -143,5 +186,4 @@ public abstract class AbstractSession<R> implements Session<R> {
             request.setId(Integer.valueOf(this.getSessionId()));
         }
     }
-
 }

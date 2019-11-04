@@ -31,8 +31,6 @@ public class Request<P> extends Message {
 
   public static final String METHOD_FIELD_NAME = "method";
 
-  public static final String POLL_METHOD_NAME = "poll";
-
   /**
    * Request identifier.
    */

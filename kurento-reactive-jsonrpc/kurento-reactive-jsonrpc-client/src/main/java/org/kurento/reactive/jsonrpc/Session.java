@@ -22,18 +22,48 @@ import org.kurento.reactive.jsonrpc.internal.JsonRpcRequestSender;
 import java.io.IOException;
 import java.util.Map;
 
+/**
+ * JSON RPC session interface.
+ *
+ * @param <R> session data type.
+ */
 public interface Session<R> extends JsonRpcRequestSender<R> {
 
-  public String getSessionId();
+    /**
+     * Returns session ID.
+     *
+     * @return {@link String} session ID.
+     */
+    String getSessionId();
 
-  public Object getRegisterInfo();
+    /**
+     * Returns Request info.
+     *
+     * @return {@link Object}.
+     */
+    Object getRegisterInfo();
 
-  public boolean isNew();
+    /**
+     * Returns true if is new session.
+     *
+     * @return boolen.
+     */
+    boolean isNew();
 
-  public void close() throws IOException;
+    /**
+     * Closes the session.
+     *
+     * @throws IOException it can trows exception.
+     */
+    void close() throws IOException;
 
-  void setReconnectionTimeout(long millis);
+    void setReconnectionTimeout(long millis);
 
-  public Map<String, Object> getAttributes();
+    /**
+     * Returns session attributes.
+     *
+     * @return {@link Map<String, Object>}.
+     */
+    Map<String, Object> getAttributes();
 
 }
