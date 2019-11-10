@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>kurento-java</artifactId>
+        <groupId>org.kurento</groupId>
+        <version>6.11.1-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>kurento-reactive-client</artifactId>
+    <packaging>jar</packaging>
+    <!-- Project-level information -->
+    <name>Kurento Reactive Client</name>
+    <description>
+        Allows server applications to control media server resources with reactive unblocked manier.
+    </description>
+
+    <!-- Project configuration -->
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.kurento</groupId>
+            <artifactId>kurento-reactive-jsonrpc-client</artifactId>
+            <version>6.11.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.kurento</groupId>
+            <artifactId>kurento-reactive-jsonrpc-server</artifactId>
+            <version>6.11.1-SNAPSHOT</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.kurento</groupId>
+            <artifactId>kms-api-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.kurento</groupId>
+            <artifactId>kms-api-elements</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.kurento</groupId>
+            <artifactId>kms-api-filters</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.kurento</groupId>
+                <artifactId>kurento-maven-plugin</artifactId>
+                <version>${version.kurento-maven-plugin}</version>
+                <configuration>
+                    <generateCodeForModules>
+                        <param>core</param>
+                        <param>elements</param>
+                        <param>filters</param>
+                    </generateCodeForModules>
+
+                    <!-- Input directory where Kurento MediaElement Definition files (*.kmd.json) can be located -->
+                    <sourceDirectory>
+                        ${basedir}/src/main/kmd
+                    </sourceDirectory>
+
+                    <!-- Output directory where the generated Java files are stored -->
+                    <generatedSourceOutputFolder>
+                        ${project.build.directory}/generated-sources/kmd
+                    </generatedSourceOutputFolder>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>generate-kurento-client</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
