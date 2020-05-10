@@ -11,7 +11,7 @@
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
 	<artifactId>kurento-parent-pom</artifactId>
-	<version>6.11.1-SNAPSHOT</version>
+	<version>6.13.2-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<!-- Project-level information -->
@@ -71,11 +71,11 @@
 		It's not critical that these versions coincide with the latest available,
 		but whenever an API update is done in those files and released,
 		these version numbers should get updated accordingly. -->
-		<version.kms-api-core>6.11.0</version.kms-api-core>
-		<version.kms-api-elements>6.11.0</version.kms-api-elements>
-		<version.kms-api-filters>6.11.0</version.kms-api-filters>
+		<version.kms-api-core>6.13.0</version.kms-api-core>
+		<version.kms-api-elements>6.13.0</version.kms-api-elements>
+		<version.kms-api-filters>6.13.0</version.kms-api-filters>
 
-		<version.kurento-utils-js>6.11.0</version.kurento-utils-js>
+		<version.kurento-utils-js>6.13.1</version.kurento-utils-js>
 		<version.kurento-maven-plugin>6.7.0</version.kurento-maven-plugin>
 
 		<!-- Kurento extra modules -->
@@ -97,7 +97,7 @@
 		<webjars.webrtc-adapter.version>6.4.0</webjars.webrtc-adapter.version>
 
 		<version.jetty>9.4.18.v20190429</version.jetty>
-		<version.netty>4.1.36.Final</version.netty>
+		<version.netty>4.1.45.Final</version.netty>
 
 		<version.apache.activemq>5.7.0</version.apache.activemq>
 		<version.apache.commons-fileupload>1.4</version.apache.commons-fileupload>
@@ -106,7 +106,7 @@
 		<version.apache.commons-lang>2.6</version.apache.commons-lang>
 		<version.apache.commons-logging>1.2</version.apache.commons-logging>
 		<version.apache.commons-pool>2.6.2</version.apache.commons-pool>
-		<version.apache.tika>1.21</version.apache.tika>
+		<version.apache.tika>[1.22,)</version.apache.tika>
 		<version.apache.fluent-hc>4.5.8</version.apache.fluent-hc>
 		<version.apache.httpclient>4.5.8</version.apache.httpclient>
 		<version.apache.httpcore>4.4.11</version.apache.httpcore>
@@ -135,7 +135,7 @@
 		<version.scribe>1.3.7</version.scribe>
 		<version.servlet-api>4.0.1</version.servlet-api>
 		<version.slf4j>1.7.26</version.slf4j>
-		<version.spring-boot>2.1.5.RELEASE</version.spring-boot>
+		<version.spring-boot>2.2.4.RELEASE</version.spring-boot>
 		<version.websocket-api>1.1</version.websocket-api>
 
 		<!-- Test Dependencies Versions -->
@@ -165,7 +165,6 @@
 		<version.compiler.plugin>3.8.1</version.compiler.plugin>
 		<version.dependency.plugin>3.1.1</version.dependency.plugin>
 		<version.deploy.plugin>3.0.0-M1</version.deploy.plugin>
-		<version.ear.plugin>3.0.11</version.ear.plugin>
 		<version.eclipse.plugin>2.10</version.eclipse.plugin>
 		<version.enforcer.plugin>3.0.0-M2</version.enforcer.plugin>
 		<version.enforcer.rules.plugin>1.2</version.enforcer.rules.plugin>
@@ -500,11 +499,6 @@
 				<version>${version.apache.commons-pool}</version>
 			</dependency>
 			<dependency>
-				<groupId>commons-logging</groupId>
-				<artifactId>commons-logging</artifactId>
-				<version>${version.apache.commons-logging}</version>
-			</dependency>
-			<dependency>
 				<groupId>org.apache.maven</groupId>
 				<artifactId>maven-artifact</artifactId>
 				<version>${version.apache.maven-artifact}</version>
@@ -803,7 +797,7 @@
 			<dependency>
 				<groupId>org.apache.commons</groupId>
 				<artifactId>commons-compress</artifactId>
-				<version>1.18</version>
+				<version>[1.19,)</version>
 			</dependency>
 			<dependency>
 				<groupId>com.healthmarketscience.jackcess</groupId>
@@ -947,11 +941,6 @@
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-ear-plugin</artifactId>
-					<version>${version.ear.plugin}</version>
-				</plugin>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-eclipse-plugin</artifactId>
 					<version>${version.eclipse.plugin}</version>
 				</plugin>
@@ -1016,6 +1005,8 @@
 					<version>${version.javadoc.plugin}</version>
 					<configuration>
 						<notimestamp>true</notimestamp>
+						<doctitle>${project.name} API</doctitle>
+						<windowtitle>${project.name} API</windowtitle>
 						<header><![CDATA[<b>${project.name} ${project.version}</b>]]></header>
 						<footer><![CDATA[<b>${project.name} ${project.version}</b>]]></footer>
 						<archive>
@@ -1528,8 +1519,12 @@
 			<id>kurento-snapshots</id>
 			<name>Kurento Snapshots</name>
 			<url>https://maven.openvidu.io/repository/snapshots/</url>
+			<!-- Must be enabled for BOTH releases and snapshots, or else the
+			versions-maven-plugin won't look for latest SNAPSHOTs when wanting
+			to update from a release.
+			See: https://stackoverflow.com/a/48572660 -->
 			<releases>
-				<enabled>false</enabled>
+				<enabled>true</enabled>
 			</releases>
 			<snapshots>
 				<enabled>true</enabled>
@@ -1542,7 +1537,7 @@
 			<name>Kurento Snapshots</name>
 			<url>https://maven.openvidu.io/repository/snapshots/</url>
 			<releases>
-				<enabled>false</enabled>
+				<enabled>true</enabled>
 			</releases>
 			<snapshots>
 				<enabled>true</enabled>
