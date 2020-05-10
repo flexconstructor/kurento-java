@@ -2,8 +2,7 @@
 		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 		xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-
-	<!-- Maven coordinates -->
+    <!-- Maven coordinates -->
 	<parent>
 		<groupId>org.kurento</groupId>
 		<artifactId>kurento-parent-pom</artifactId>
@@ -40,6 +39,8 @@
 				<module>kurento-assembly</module>
 				<module>kurento-integration-tests</module>
 				<module>kurento-basicroom</module>
+				<module>kurento-reactive-jsonrpc</module>
+				<module>kurento-reactive-client</module>
 			</modules>
 			<build>
 				<plugins>
@@ -69,6 +70,7 @@
 				<module>kurento-client</module>
 				<module>kurento-repository</module>
 				<module>kurento-integration-tests</module>
+				<module>kurento-reactive-jsonrpc</module>
 			</modules>
 			<build>
 				<plugins>
