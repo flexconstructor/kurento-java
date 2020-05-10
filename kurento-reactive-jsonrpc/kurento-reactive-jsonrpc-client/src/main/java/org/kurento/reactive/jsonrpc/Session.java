@@ -18,6 +18,7 @@
 package org.kurento.reactive.jsonrpc;
 
 import org.kurento.reactive.jsonrpc.internal.JsonRpcRequestSender;
+import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 import java.util.Map;
@@ -55,7 +56,7 @@ public interface Session<R> extends JsonRpcRequestSender<R> {
      *
      * @throws IOException it can trows exception.
      */
-    void close() throws IOException;
+    Mono<Void> close();
 
     void setReconnectionTimeout(long millis);
 
